@@ -4,7 +4,7 @@ cos_registration_agent welcomes contributions from the community.
 
 **You need PYTHON3!**
 
-This instructions are for linux base systems. (Linux, MacOS, BSD, etc.)
+This instructions are for linux base systems.
 ## Setting up your own fork of this repo.
 
 - On github interface click on `Fork` button.
@@ -46,12 +46,6 @@ Run `make lint` to run the linter.
 Run `make test` to run the tests.
 
 Ensure code coverage report shows `100%` coverage, add tests to your PR.
-
-## Build the docs locally
-
-Run `make docs` to build the docs.
-
-Ensure your new changes are documented.
 
 ## Commit your changes
 

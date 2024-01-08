@@ -1,5 +1,5 @@
-from project_name.base import NAME
+from cos_registration_agent.base import NAME
 
 
 def test_base():
-    assert NAME == "project_name"
+    assert NAME == "cos_registration_agent"

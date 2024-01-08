@@ -7,4 +7,3 @@ isort
 pytest-cov
 mypy
 gitchangelog
-mkdocs

@@ -9,7 +9,10 @@ COS registration agent is responsible for identifying the robot to the COS serve
 [![codecov](https://codecov.io/gh/ubuntu-robotics/cos-registration-agent/branch/main/graph/badge.svg?token=cos-registration-agent_token_here)](https://codecov.io/gh/ubuntu-robotics/cos-registration-agent)
 [![CI](https://github.com/ubuntu-robotics/cos-registration-agent/actions/workflows/main.yml/badge.svg)](https://github.com/ubuntu-robotics/cos-registration-agent/actions/workflows/main.yml)
 
+## Features
+
 The `cos_registration_agent` can perform two actions: `setup` and `update`.
+
 ### Setup
 Setup is reponsible for identifying and configuring the COS for a given agent. This action will failed if called a second time by a device.
 #### Grafana
@@ -20,10 +23,19 @@ Update is making sure that the configuration of the COS for a given device gets 
 #### Grafana
 - Upload dashboard
 
+## Installation
+To install the `cos-registration-agent``, you must build and install the snap:
+```
+snapcraft
+```
+```
+sudo snap install cos-registration-agent*.snap --dangerous
+```
+
 ## Usage
 
 ```
-usage: cos_registration_agent [-h] --grafana-service-token GRAFANA_SERVICE_TOKEN --grafana-dashboard
+usage: cos-registration-agent [-h] --grafana-service-token GRAFANA_SERVICE_TOKEN --grafana-dashboard
                               GRAFANA_DASHBOARD [--config CONFIG] --url URL [--robot-unique-id ROBOT_UNIQUE_ID]
                               [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
                               {setup,update}
@@ -52,7 +64,7 @@ values override config file values which override defaults.
 Setup command example:
 
 ```
-cos_registration_agent --url localhost --grafana-service-token glsa_123456789 --grafana-dashboard tests/dashboard.json setup
+cos-registration-agent --url localhost --grafana-service-token glsa_123456789 --grafana-dashboard tests/dashboard.json setup
 ```
 
 Alternatively a configuration file can be used instead of argument flags.
@@ -64,9 +76,9 @@ url: localhost
 grafana-service-token: glsa_12345
 grafana-dashboard: tests/dashboard.json
 ```
-Then we can call `cos_registration_agent` with:
+Then we can call `cos-registration-agent` with:
 ```
-cos_registration_agent --config ./config.yaml setup
+cos-registration-agent --config ./config.yaml setup
 ```
 
 ## Development

@@ -1,28 +1,61 @@
-"""CLI interface for cos_registration_agent project.
+"""CLI interface for cos_registration_agent project."""
 
-Be creative! do whatever you want!
+import logging
+from pathlib import Path
 
-- Install click or typer and create a CLI app
-- Use builtin argparse
-- Start a web application
-- Import things from your .base module
-"""
+import configargparse
+
+from cos_registration_agent.grafana import Grafana
+from cos_registration_agent.machine_id import get_machine_id
+
+logger = logging.getLogger(__name__)
+
+parser = configargparse.get_argument_parser()
+
+parser.add_argument("--config", is_config_file=True, help="Config file path.")
+
+parser.add_argument("--url", help="COS base IP/URL", required=True, type=str)
+
+parser.add_argument(
+    "--robot-unique-id",
+    help="Robot unique ID, default set to machine ID.",
+    type=Path,
+)
+
+parser.add_argument(
+    "action",
+    choices=["setup", "update"],
+    help="Action to perform",
+)
+
+parser.add_argument(
+    "--log-level",
+    choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+    help="Set the logging level",
+)
+
+args = parser.parse_args()
 
 
 def main():  # pragma: no cover
-    """
-    The main function executes on commands:
-    `python -m cos_registration_agent` and `$ cos_registration_agent `.
+    if args.log_level:
+        logging.basicConfig(level=getattr(logging, args.log_level))
 
-    This is your program's entry point.
+    if args.robot_unique_id:
+        machine_id = args.robot_unique_id
+    else:
+        machine_id = get_machine_id()
 
-    You can change this function to do whatever you want.
-    Examples:
-        * Run a test suite
-        * Run a server
-        * Do some other stuff
-        * Run a command line application (Click, Typer, ArgParse)
-        * List all available tasks
-        * Run an application (Flask, FastAPI, Django, etc.)
-    """
-    print("This will do something")
+    logger.info(f"Machine id: {machine_id}")
+
+    grafana = Grafana(args.url, args.grafana_service_token, machine_id)
+
+    try:
+        if args.action == "setup":
+            grafana.setup(args.grafana_dashboard)
+        elif args.action == "update":
+            grafana.update(args.grafana_dashboard)
+    except Exception as e:
+        logger.error(f"Failed to {args.action}: {e}")
+
+    return

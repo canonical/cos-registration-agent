@@ -25,13 +25,13 @@ parser.add_argument(
 parser.add_argument(
     "action",
     choices=["setup", "update"],
-    help="Action to perform",
+    help="action to perform",
 )
 
 parser.add_argument(
     "--log-level",
     choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-    help="Set the logging level",
+    help="set the logging level",
 )
 
 args = parser.parse_args()

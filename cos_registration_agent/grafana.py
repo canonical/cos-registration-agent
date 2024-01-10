@@ -12,13 +12,13 @@ parser = configargparse.get_argument_parser()
 
 parser.add_argument(
     "--grafana-service-token",
-    help="Grafana service token",
+    help="grafana service token",
     required=True,
     type=str,
 )
 parser.add_argument(
     "--grafana-dashboard",
-    help="Path to the grafana dashboard",
+    help="path to the grafana dashboard",
     required=True,
     type=Path,
 )

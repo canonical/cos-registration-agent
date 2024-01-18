@@ -45,7 +45,7 @@ def main():  # pragma: no cover
     else:
         machine_id = get_machine_id()
 
-    logger.info(f"Machine id: {machine_id}")
+    logger.debug(f"Machine id: {machine_id}")
 
     grafana = Grafana(args.url, args.grafana_service_token, machine_id)
 

@@ -21,6 +21,7 @@ parts:
   cos-registration-agent:
     plugin: python
     source: .
+
 apps:
   cos-registration-agent:
     command: bin/cos-registration-agent

@@ -7,6 +7,7 @@ import json
 from cos_registration_agent.grafana import Grafana
 from grafana_client.client import GrafanaClientError
 
+
 def rootdir():
     return os.path.dirname(os.path.abspath(__file__))
 

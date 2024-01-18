@@ -1,7 +1,6 @@
 """CLI interface for cos_registration_agent project."""
 
 import logging
-from pathlib import Path
 
 import configargparse
 
@@ -19,7 +18,7 @@ parser.add_argument("--url", help="COS base IP/URL", required=True, type=str)
 parser.add_argument(
     "--robot-unique-id",
     help="Robot unique ID, default set to machine ID.",
-    type=Path,
+    type=str,
 )
 
 parser.add_argument(

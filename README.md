@@ -1,7 +1,9 @@
 
 # COS registration agent
 
-COS registration agent is responsible for identifying the robot to the COS server as well as uploading robot specific data to the server (dashboard, UID, etc).
+COS registration agent is responsible for identifying the robot to the
+COS registration server as well as uploading robot specific data
+to the server (dashboard, UID, etc).
 
 ---
 # cos_registration_agent
@@ -14,16 +16,20 @@ COS registration agent is responsible for identifying the robot to the COS serve
 The `cos_registration_agent` can perform two actions: `setup` and `update`.
 
 ### Setup
-Setup is reponsible for identifying and configuring the COS for a given agent. This action will failed if called a second time by a device.
+Setup is reponsible for identifying and configuring the COS for a given agent.
+This action will failed if called by an already registered device.
 #### Grafana
 - Create device dashboard folder
 - Upload initial dashboard
 ### Update
-Update is making sure that the configuration of the COS for a given device gets updated over time. This action is meant to be called multiple times.
+Update is making sure that the configuration of the COS for a given device
+gets updated over time. This action is meant to be called multiple times.
 #### Grafana
 - Upload dashboard
 
 ## Installation
+The COS registration agent required systemd.
+
 To install the `cos-registration-agent``, you must build and install the snap:
 ```
 snapcraft
@@ -56,9 +62,12 @@ optional arguments:
   --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         set the logging level (default: None)
 
-Args that start with '--' can also be set in a config file (specified via --config). Config file syntax allows:
-key=value, flag=true, stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi). In general, command-line
-values override config file values which override defaults.
+Args that start with '--' can also be set in a config file(specified via
+--config). Config file syntax allows:
+key=value, flag=true, stuff=[a,b,c] (for details, see syntax at
+https://goo.gl/R74nmi).
+In general, command-line values override config file values which override
+defaults.
 ```
 
 Setup command example:

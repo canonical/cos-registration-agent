@@ -37,10 +37,10 @@ class Grafana:
         )
 
         if not self.client.health.check():
-            raise RuntimeError(
-                "Grafana health check failed, \
+            error_message = "Grafana health check failed, \
                   make sure the server is reachable"
-            )
+            logger.error(error_message)
+            raise RuntimeError(error_message)
 
     def setup(self, grafana_dashboard_path: Path):
         try:

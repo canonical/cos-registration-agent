@@ -1,9 +1,9 @@
-# This requirements are for development and testing only, not for production.
-pytest
+black
 coverage
 flake8
-black
-isort
-pytest-cov
-mypy
 gitchangelog
+isort
+mock
+mypy
+pytest
+pytest-cov

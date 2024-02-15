@@ -48,7 +48,11 @@ def main():  # pragma: no cover
 
     logger.debug(f"Machine id: {machine_id}")
 
-    write_data(machine_id)
+    try:
+        write_data(machine_id)
+    except Exception as e:
+        logger.error(f"Failed to {args.action}: {e}")
+        return
 
     if not args.action == "get-uid":
         grafana = Grafana(args.url, args.grafana_service_token, machine_id)

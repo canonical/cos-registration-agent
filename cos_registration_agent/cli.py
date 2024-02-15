@@ -6,6 +6,7 @@ import configargparse
 
 from cos_registration_agent.grafana import Grafana
 from cos_registration_agent.machine_id import get_machine_id
+from cos_registration_agent.write_data import write_data
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ parser = configargparse.get_argument_parser()
 
 parser.add_argument("--config", is_config_file=True, help="Config file path.")
 
-parser.add_argument("--url", help="COS base IP/URL", required=True, type=str)
+parser.add_argument("--url", help="COS base IP/URL", type=str)
 
 parser.add_argument(
     "--robot-unique-id",
@@ -23,7 +24,7 @@ parser.add_argument(
 
 parser.add_argument(
     "action",
-    choices=["setup", "update"],
+    choices=["setup", "update", "get-uid"],
     help="action to perform",
 )
 
@@ -47,14 +48,18 @@ def main():  # pragma: no cover
 
     logger.debug(f"Machine id: {machine_id}")
 
-    grafana = Grafana(args.url, args.grafana_service_token, machine_id)
+    write_data(machine_id)
 
-    try:
-        if args.action == "setup":
-            grafana.setup(args.grafana_dashboard)
-        elif args.action == "update":
-            grafana.update(args.grafana_dashboard)
-    except Exception as e:
-        logger.error(f"Failed to {args.action}: {e}")
+    if not args.action == "get-uid":
+        grafana = Grafana(args.url, args.grafana_service_token, machine_id)
+
+        try:
+            if args.action == "setup":
+                grafana.setup(args.grafana_dashboard)
+            elif args.action == "update":
+                grafana.update(args.grafana_dashboard)
+
+        except Exception as e:
+            logger.error(f"Failed to {args.action}: {e}")
 
     return

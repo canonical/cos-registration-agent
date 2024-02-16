@@ -12,6 +12,12 @@ logger = logging.getLogger(__name__)
 
 parser = configargparse.get_argument_parser()
 
+parser.add_argument(
+    "action",
+    choices=["setup", "update", "write-uid"],
+    help="action to perform",
+)
+
 parser.add_argument("--config", is_config_file=True, help="Config file path.")
 
 parser.add_argument("--url", help="COS base IP/URL", type=str)
@@ -20,12 +26,6 @@ parser.add_argument(
     "--robot-unique-id",
     help="Robot unique ID, default set to machine ID.",
     type=str,
-)
-
-parser.add_argument(
-    "action",
-    choices=["setup", "update", "get-uid"],
-    help="action to perform",
 )
 
 parser.add_argument(
@@ -48,22 +48,30 @@ def main():  # pragma: no cover
 
     logger.debug(f"Machine id: {machine_id}")
 
-    try:
-        write_data(machine_id)
-    except Exception as e:
-        logger.error(f"Failed to {args.action}: {e}")
-        return
-
-    if not args.action == "get-uid":
-        grafana = Grafana(args.url, args.grafana_service_token, machine_id)
-
+    if  args.action == "write-uid":
         try:
-            if args.action == "setup":
-                grafana.setup(args.grafana_dashboard)
-            elif args.action == "update":
-                grafana.update(args.grafana_dashboard)
-
+            write_data(machine_id)
+            return
         except Exception as e:
             logger.error(f"Failed to {args.action}: {e}")
+            return
+
+    if args.url is None:
+        parser.error("--url argument is required")
+    if args.grafana_service_token is None:
+        parser.error("--grafana_service_token argument is required")
+    if args.grafana_dashboard is None:
+        parser.error("--grafana_dashboard argument is required")
+
+    grafana = Grafana(args.url, args.grafana_service_token, machine_id)
+
+    try:
+        if args.action == "setup":
+            grafana.setup(args.grafana_dashboard)
+        elif args.action == "update":
+            grafana.update(args.grafana_dashboard)
+
+    except Exception as e:
+        logger.error(f"Failed to {args.action}: {e}")
 
     return

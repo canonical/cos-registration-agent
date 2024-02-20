@@ -12,11 +12,11 @@ logger = logging.getLogger(__name__)
 
 parser = configargparse.get_argument_parser()
 
-parser.add_argument(
-    "action",
-    choices=["setup", "update", "write-uid"],
-    help="action to perform",
-)
+action_subparsers = parser.add_subparsers(dest="action", help="Action to perform")
+
+setup_parser = action_subparsers.add_parser("setup", help="Setup Grafana dashboards")
+update_parser = action_subparsers.add_parser("update", help="Update Grafana dashboards")
+writeuid_parser = action_subparsers.add_parser("write-uid", help="Write device unique ID to $SNAP_COMMON")
 
 parser.add_argument("--config", is_config_file=True, help="Config file path.")
 

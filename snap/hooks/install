@@ -4,7 +4,7 @@ if ! snapctl is-connected configuration; then
   >&2 echo "Plug 'configuration' isn't connected, \
   please run: snap connect ${SNAP_NAME}:configuration PROVIDER_SNAP:configuration"
   >&2 echo "install hook will be ignored"
-  exit 1
+  exit 0
 fi
 
 CONFIG_FILE_PATH="$SNAP/configuration/cos-registration-agent.yaml"

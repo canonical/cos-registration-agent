@@ -15,12 +15,14 @@ parser = configargparse.get_argument_parser()
 action_subparsers = parser.add_subparsers(dest="action", help="Action to perform")
 
 setup_parser = action_subparsers.add_parser("setup", help="Setup Grafana dashboards")
+setup_parser.add_argument("--url", help="COS base IP/URL", type=str)
+
 update_parser = action_subparsers.add_parser("update", help="Update Grafana dashboards")
+update_parser.add_argument("--url", help="COS base IP/URL", type=str)
+
 writeuid_parser = action_subparsers.add_parser("write-uid", help="Write device unique ID to $SNAP_COMMON")
 
 parser.add_argument("--config", is_config_file=True, help="Config file path.")
-
-parser.add_argument("--url", help="COS base IP/URL", type=str)
 
 parser.add_argument(
     "--robot-unique-id",
@@ -56,8 +58,6 @@ def main():  # pragma: no cover
             logger.error(f"Failed to {args.action}: {e}")
             return
 
-    if args.url is None:
-        parser.error("--url argument is required")
     if args.grafana_service_token is None:
         parser.error("--grafana_service_token argument is required")
     if args.grafana_dashboard is None:

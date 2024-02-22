@@ -52,7 +52,7 @@ def main():  # pragma: no cover
 
     if  args.action == "write-uid":
         try:
-            write_data(machine_id)
+            write_data(machine_id, filename="device_id.txt")
             return
         except Exception as e:
             logger.error(f"Failed to {args.action}: {e}")

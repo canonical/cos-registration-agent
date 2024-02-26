@@ -7,7 +7,7 @@ import configargparse
 from cos_registration_agent.grafana import Grafana
 from cos_registration_agent.machine_id import get_machine_id
 from cos_registration_agent.write_data import write_data
-
+from cos_registration_agent.generate_ssh_keys import generate_ssh_keypair
 logger = logging.getLogger(__name__)
 
 parser = configargparse.get_argument_parser()
@@ -21,6 +21,8 @@ update_parser = action_subparsers.add_parser("update", help="Update Grafana dash
 update_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
 writeuid_parser = action_subparsers.add_parser("write-uid", help="Write device unique ID to $SNAP_COMMON")
+
+generatekeys_parser = action_subparsers.add_parser("generate-keys", help="Generate ssh keys for device and write them to $SNAP_COMMON")
 
 parser.add_argument("--config", is_config_file=True, help="Config file path.")
 
@@ -53,6 +55,16 @@ def main():  # pragma: no cover
     if  args.action == "write-uid":
         try:
             write_data(machine_id, filename="device_id.txt")
+            return
+        except Exception as e:
+            logger.error(f"Failed to {args.action}: {e}")
+            return
+
+    if  args.action == "generate-keys":
+        try:
+            private_key, public_key = generate_ssh_keypair()
+            write_data(private_key, "device_private_key")
+            write_data(public_key, "device_public_key.pub")
             return
         except Exception as e:
             logger.error(f"Failed to {args.action}: {e}")

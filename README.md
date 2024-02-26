@@ -13,7 +13,7 @@ to the server (dashboard, UID, etc).
 
 ## Features
 
-The `cos_registration_agent` can perform two actions: `setup` and `update`.
+The `cos_registration_agent` can perform three actions: `setup`, `update` and `write-uid`.
 
 ### Setup
 Setup is reponsible for identifying and configuring the COS for a given agent.
@@ -26,6 +26,9 @@ Update is making sure that the configuration of the COS for a given device
 gets updated over time. This action is meant to be called multiple times.
 #### Grafana
 - Upload dashboard
+### Write-uid
+Write-uid is responsible for writing the device unique ID in the SNAP_COMMON folder
+where it is made available for other snaps on the device.
 
 ## Installation
 The COS registration agent required systemd.
@@ -41,28 +44,32 @@ sudo snap install cos-registration-agent*.snap --dangerous
 ## Usage
 
 ```
-usage: cos-registration-agent [-h] --grafana-service-token GRAFANA_SERVICE_TOKEN --grafana-dashboard
-                              GRAFANA_DASHBOARD [--config CONFIG] --url URL [--robot-unique-id ROBOT_UNIQUE_ID]
+usage: cos-registration-agent [-h] [--grafana-service-token GRAFANA_SERVICE_TOKEN]
+                              [--grafana-dashboard GRAFANA_DASHBOARD]
+                              [--config CONFIG] [--robot-unique-id ROBOT_UNIQUE_ID]
                               [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
-                              {setup,update}
+                              {setup,update,write-uid} ...
 
 positional arguments:
-  {setup,update}        action to perform
+  {setup,update,write-uid}
+                        Action to perform
+    setup               Setup Grafana dashboards
+    update              Update Grafana dashboards
+    write-uid           Write device unique ID to $SNAP_COMMON
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   --grafana-service-token GRAFANA_SERVICE_TOKEN
                         grafana service token (default: None)
   --grafana-dashboard GRAFANA_DASHBOARD
                         path to the grafana dashboard (default: None)
   --config CONFIG       Config file path. (default: None)
-  --url URL             COS base IP/URL (default: None)
   --robot-unique-id ROBOT_UNIQUE_ID
                         Robot unique ID, default set to machine ID. (default: None)
   --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         set the logging level (default: None)
 
-Args that start with '--' can also be set in a config file(specified via
+Args that start with '--' can also be set in a config file (specified via
 --config). Config file syntax allows:
 key=value, flag=true, stuff=[a,b,c] (for details, see syntax at
 https://goo.gl/R74nmi).
@@ -73,7 +80,7 @@ defaults.
 Setup command example:
 
 ```
-cos-registration-agent --url localhost --grafana-service-token glsa_123456789 --grafana-dashboard tests/dashboard.json setup
+cos-registration-agent --grafana-service-token glsa_123456789 --grafana-dashboard tests/dashboard.json setup --url localhost 
 ```
 
 Alternatively a configuration file can be used instead of argument flags.

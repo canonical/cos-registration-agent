@@ -1,4 +1,18 @@
 #!/bin/sh -e
 
 $SNAP/bin/cos-registration-agent write-uid
-$SNAP/bin/cos-registration-agent generate-keys
+
+if [ -f $SNAP_USER_COMMON/device_private_key ]; then
+    cp $SNAP_USER_COMMON/device_private_key  $SNAP_COMMON/
+else
+    echo $SNAP_USER_COMMON
+    echo "could not find private_key, make sure setup action correctly executed"
+    exit 1
+fi
+if [ -f $SNAP_USER_COMMON/device_public_key.pub ]; then
+    cp $SNAP_USER_COMMON/device_public_key.pub  $SNAP_COMMON/
+else
+    echo $SNAP_USER_COMMON
+    echo "could not find private_key, make sure setup action correctly executed"
+    exit 1
+fi

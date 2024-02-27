@@ -22,8 +22,6 @@ update_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
 writeuid_parser = action_subparsers.add_parser("write-uid", help="Write device unique ID to $SNAP_COMMON")
 
-generatekeys_parser = action_subparsers.add_parser("generate-keys", help="Generate ssh keys for device and write them to $SNAP_COMMON")
-
 parser.add_argument("--config", is_config_file=True, help="Config file path.")
 
 parser.add_argument(
@@ -60,16 +58,6 @@ def main():  # pragma: no cover
             logger.error(f"Failed to {args.action}: {e}")
             return
 
-    if  args.action == "generate-keys":
-        try:
-            private_key, public_key = generate_ssh_keypair()
-            write_data(private_key, "device_private_key")
-            write_data(public_key, "device_public_key.pub")
-            return
-        except Exception as e:
-            logger.error(f"Failed to {args.action}: {e}")
-            return
-
     if args.grafana_service_token is None:
         parser.error("--grafana_service_token argument is required")
     if args.grafana_dashboard is None:
@@ -79,6 +67,9 @@ def main():  # pragma: no cover
 
     try:
         if args.action == "setup":
+            private_key, public_key = generate_ssh_keypair()
+            write_data(private_key, "device_private_key", folder="SNAP_USER_COMMON")
+            write_data(public_key, "device_public_key.pub", folder="SNAP_USER_COMMON")
             grafana.setup(args.grafana_dashboard)
         elif args.action == "update":
             grafana.update(args.grafana_dashboard)

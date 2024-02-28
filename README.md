@@ -28,7 +28,7 @@ gets updated over time. This action is meant to be called multiple times.
 - Upload dashboard
 ### Write-uid
 Write-uid is responsible for writing the device unique ID in the SNAP_COMMON folder
-where is made available for other snaps on the device.
+where it is made available for other snaps on the device.
 
 ## Installation
 The COS registration agent required systemd.

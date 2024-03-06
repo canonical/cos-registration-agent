@@ -13,13 +13,11 @@ class TestWriteData(unittest.TestCase):
         self.data = "test data"
         self.filename = "test.txt"
         self.folder = "folder"
+        self.addCleanup(self.mock_os_get_patcher.stop)
 
-    def tearDown(self):
-        self.mock_os_get_patcher.stop()
 
     @patch('cos_registration_agent.write_data.open', new_callable=MagicMock)
     def test_write_data_success(self, mock_open):
-
         result = write_data(self.data, self.filename, self.folder)
 
         self.mock_os_get.assert_called_once_with(self.folder)
@@ -30,7 +28,6 @@ class TestWriteData(unittest.TestCase):
 
     @patch('cos_registration_agent.write_data.open', side_effect=OSError)
     def test_write_data_os_error(self, mock_open):
-
         with self.assertRaises(OSError):
             write_data(self.data, self.filename, self.folder)
 

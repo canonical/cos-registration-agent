@@ -7,7 +7,8 @@ import configargparse
 from cos_registration_agent.grafana import Grafana
 from cos_registration_agent.machine_id import get_machine_id
 from cos_registration_agent.write_data import write_data
-from cos_registration_agent.generate_ssh_keys import generate_ssh_keypair
+from cos_registration_agent.ssh_key_manager import SSHKeysManager
+
 logger = logging.getLogger(__name__)
 
 parser = configargparse.get_argument_parser()
@@ -58,6 +59,8 @@ def main():  # pragma: no cover
             logger.error(f"Failed to {args.action}: {e}")
             return
 
+    ssh_key_manager = SSHKeysManager()
+
     if args.grafana_service_token is None:
         parser.error("--grafana_service_token argument is required")
     if args.grafana_dashboard is None:
@@ -67,9 +70,7 @@ def main():  # pragma: no cover
 
     try:
         if args.action == "setup":
-            private_key, public_key = generate_ssh_keypair()
-            write_data(private_key, "device_private_key", folder="SNAP_USER_COMMON")
-            write_data(public_key, "device_public_key.pub", folder="SNAP_USER_COMMON")
+            ssh_key_manager.setup(folder='SNAP_COMMON')
             grafana.setup(args.grafana_dashboard)
         elif args.action == "update":
             grafana.update(args.grafana_dashboard)

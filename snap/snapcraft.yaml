@@ -18,9 +18,9 @@ slots:
         - $SNAP
 
 plugs:
-  rob-cos-common-write:
+  rob-cos-data-write:
     interface: content
-    target: $SNAP_COMMON
+    target: $SNAP_DATA
 
 parts:
   cos-registration-agent:
@@ -30,4 +30,4 @@ parts:
 apps:
   cos-registration-agent:
     command: bin/cos-registration-agent
-    plugs: [network, rob-cos-common-write]
+    plugs: [network, rob-cos-data-write]

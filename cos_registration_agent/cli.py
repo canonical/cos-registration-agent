@@ -53,7 +53,7 @@ def main():  # pragma: no cover
 
     if  args.action == "write-uid":
         try:
-            write_data(machine_id, filename="device_id.txt")
+            write_data(machine_id, filename="device_id.txt", folder='SNAP_DATA')
             return
         except Exception as e:
             logger.error(f"Failed to {args.action}: {e}")
@@ -70,7 +70,7 @@ def main():  # pragma: no cover
 
     try:
         if args.action == "setup":
-            ssh_key_manager.setup(folder='SNAP_COMMON')
+            ssh_key_manager.setup(folder='SNAP_DATA')
             grafana.setup(args.grafana_dashboard)
         elif args.action == "update":
             grafana.update(args.grafana_dashboard)

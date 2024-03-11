@@ -4,7 +4,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-def write_data(data, filename, folder='SNAP_DATA'):
+def write_data(data, filename, snap_folder_env='SNAP_COMMON', folder='rob-cos-shared-data/'):
     """
     Write data to a file.
     Args:
@@ -14,12 +14,14 @@ def write_data(data, filename, folder='SNAP_DATA'):
     Returns:
     - None: if writing successfull.
     """
+
     try:
-        dir = os.environ.get(folder)
+        snap_dir = os.environ.get(snap_folder_env)
     except KeyError as e:
         raise e
-    
-    file_path = os.path.join(dir, f'{filename}')
+
+    file_path = os.path.join(snap_dir, folder, f'{filename}')
+
     try:
         with open(file_path, 'w') as file:
             file.write(data)

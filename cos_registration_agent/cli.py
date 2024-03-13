@@ -3,6 +3,7 @@
 import logging
 
 import configargparse
+import os
 
 from cos_registration_agent.grafana import Grafana
 from cos_registration_agent.machine_id import get_machine_id
@@ -22,6 +23,13 @@ update_parser = action_subparsers.add_parser("update", help="Update Grafana dash
 update_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
 writeuid_parser = action_subparsers.add_parser("write-uid", help="Write device unique ID to $SNAP_COMMON")
+
+parser.add_argument(
+    "--shared-data-path",
+    help="The path to which the relevant common devices app files such as robot-unique-id are stored.",
+    type=str,
+    default=os.getcwd()
+)
 
 parser.add_argument("--config", is_config_file=True, help="Config file path.")
 
@@ -53,7 +61,7 @@ def main():  # pragma: no cover
 
     if  args.action == "write-uid":
         try:
-            write_data(machine_id, filename="device_id.txt", folder="$SNAP_COMMON/rob-cos-shared-data")
+            write_data(machine_id, filename="device_id.txt", folder=args.shared_data_path)
             return
         except Exception as e:
             logger.error(f"Failed to {args.action}: {e}")
@@ -70,7 +78,7 @@ def main():  # pragma: no cover
 
     try:
         if args.action == "setup":
-            ssh_key_manager.setup(folder="$SNAP_COMMON/rob-cos-shared-data")
+            ssh_key_manager.setup(folder=args.shared_data_path)
             grafana.setup(args.grafana_dashboard)
         elif args.action == "update":
             grafana.update(args.grafana_dashboard)

@@ -4,7 +4,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-def write_data(data, filename, folder="."):
+def write_data(data, filename, folder):
     """
     Write data to a file.
     Args:
@@ -16,14 +16,11 @@ def write_data(data, filename, folder="."):
     Returns:
     - None: if writing successfull.
     """
-    if folder.startswith('$'):
-        env_variable = folder[1:].split('/')[0]  # Extract the environment variable name
-        snap_dir = os.environ.get(env_variable)
-        if not snap_dir:
-            raise ValueError(f"Environment variable {env_variable} not found.")
-        file_path = os.path.join(snap_dir, folder[len(env_variable)+2:], filename)
-    else:
-        file_path = os.path.join(folder, filename)
+    try:
+      file_path = os.path.join(folder, filename)
+    except Exception as e:
+      logging.error(f"Failed to join folder and filename: {folder}, {filename}.")
+      raise e
 
     try:
         with open(file_path, 'w') as file:

@@ -46,6 +46,7 @@ sudo snap install cos-registration-agent*.snap --dangerous
 ```
 usage: cos-registration-agent [-h] [--grafana-service-token GRAFANA_SERVICE_TOKEN]
                               [--grafana-dashboard GRAFANA_DASHBOARD]
+                              [--shared-data-path]
                               [--config CONFIG] [--robot-unique-id ROBOT_UNIQUE_ID]
                               [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
                               {setup,update,write-uid} ...
@@ -63,6 +64,9 @@ options:
                         grafana service token (default: None)
   --grafana-dashboard GRAFANA_DASHBOARD
                         path to the grafana dashboard (default: None)
+  --shared-data-path SHARED_DATA_PATH
+                        The path to which the relevant common devices app files
+                        such as robot-unique-id are stored. (default: current_directory)
   --config CONFIG       Config file path. (default: None)
   --robot-unique-id ROBOT_UNIQUE_ID
                         Robot unique ID, default set to machine ID. (default: None)
@@ -80,7 +84,7 @@ defaults.
 Setup command example:
 
 ```
-cos-registration-agent --grafana-service-token glsa_123456789 --grafana-dashboard tests/dashboard.json setup --url localhost 
+sudo cos-registration-agent --grafana-service-token glsa_123456789 --grafana-dashboard tests/dashboard.json --url localhost
 ```
 
 Alternatively a configuration file can be used instead of argument flags.
@@ -91,6 +95,7 @@ url: localhost
 # grafana
 grafana-service-token: glsa_12345
 grafana-dashboard: tests/dashboard.json
+shared-data-path: $SNAP_COMMON/rob-cos-shared-data setup
 ```
 Then we can call `cos-registration-agent` with:
 ```

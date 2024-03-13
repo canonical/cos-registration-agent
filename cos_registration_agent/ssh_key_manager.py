@@ -35,7 +35,7 @@ class SSHKeysManager:
         public_key = public_key.decode('utf-8')
         return private_key, public_key
 
-    def setup(self, public_exponent=65537, key_size=2048, folder='SNAP_COMMON'):
+    def setup(self, folder, public_exponent=65537, key_size=2048):
         """
         Generate SSH keys and write them to a folder
 

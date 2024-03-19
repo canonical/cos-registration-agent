@@ -4,6 +4,6 @@ flake8
 gitchangelog
 isort
 mock
-mypy
+mypy==0.990
 pytest
 pytest-cov

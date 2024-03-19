@@ -16,11 +16,7 @@ def write_data(data, filename, folder):
     Returns:
     - None: if writing successfull.
     """
-    try:
-      file_path = os.path.join(folder, filename)
-    except Exception as e:
-      logging.error(f"Failed to join folder and filename: {folder}, {filename}.")
-      raise e
+    file_path = os.path.join(folder, filename)
 
     try:
         with open(file_path, 'w') as file:

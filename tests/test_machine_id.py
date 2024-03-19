@@ -3,7 +3,7 @@ import unittest
 from cos_registration_agent.machine_id import get_machine_id
 
 
-class TestGrafana(unittest.TestCase):
+class TestMachineID(unittest.TestCase):
     def test_machine_id_open_file(self):
         machine_id = get_machine_id()
 

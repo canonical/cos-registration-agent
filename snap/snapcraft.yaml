@@ -20,7 +20,7 @@ slots:
 plugs:
   rob-cos-common-write:
     interface: content
-    target: $SNAP_COMMON
+    target: $SNAP_COMMON/rob-cos-shared-data
 
 parts:
   cos-registration-agent:

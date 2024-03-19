@@ -65,4 +65,4 @@ class Grafana:
             dashboard_json["folderUid"] = self.robot_uid
             logger.debug("Dashboard json:")
             logger.debug(dashboard_json)
-            return self.client.dashboard.update_dashboard(dashboard_json)
+            return self.client.dashboard.update_dashboard(dashboard_json)  

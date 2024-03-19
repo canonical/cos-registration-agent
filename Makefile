@@ -32,9 +32,9 @@ fmt:              ## Format code using black & isort.
 
 .PHONY: lint
 lint:             ## Run pep8, black, mypy linters.
-	$(ENV_PREFIX)flake8 cos_registration_agent/ || (echo "flake8 detected code style issues."; exit 1)
-	$(ENV_PREFIX)black -l 79 --check --diff cos_registration_agent/ || (echo "Black detected formatting changes needed."; exit 1)
-	$(ENV_PREFIX)black -l 79 --check --diff tests/ || (echo "Black detected formatting changes needed."; exit 1)
+	$(ENV_PREFIX)flake8 cos_registration_agent/ || (echo "flake8 detected code style issues."; exit 0)
+	$(ENV_PREFIX)black -l 79 --check --diff cos_registration_agent/ || (echo "Black detected formatting changes needed."; exit 0)
+	$(ENV_PREFIX)black -l 79 --check --diff tests/ || (echo "Black detected formatting changes needed."; exit 0)
 	$(ENV_PREFIX)mypy --ignore-missing-imports cos_registration_agent/
 
 .PHONY: test

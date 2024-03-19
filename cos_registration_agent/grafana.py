@@ -33,7 +33,7 @@ class Grafana:
             url_path_prefix="cos-grafana",
             auth=TokenAuth(token=service_token),
         )
-
+ 
         if not self.client.health.check():
             error_message = "Grafana health check failed, \
                   make sure the server is reachable"

@@ -14,21 +14,31 @@ logger = logging.getLogger(__name__)
 
 parser = configargparse.get_argument_parser()
 
-action_subparsers = parser.add_subparsers(dest="action", help="Action to perform")
+action_subparsers = parser.add_subparsers(
+    dest="action", help="Action to perform"
+)
 
-setup_parser = action_subparsers.add_parser("setup", help="Setup Grafana dashboards")
+setup_parser = action_subparsers.add_parser(
+    "setup", help="Setup Grafana dashboards"
+)
+
 setup_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
-update_parser = action_subparsers.add_parser("update", help="Update Grafana dashboards")
+update_parser = action_subparsers.add_parser(
+    "update", help="Update Grafana dashboards"
+)
 update_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
-writeuid_parser = action_subparsers.add_parser("write-uid", help="Write device unique ID to $SNAP_COMMON")
+writeuid_parser = action_subparsers.add_parser(
+    "write-uid", help="Write device unique ID to $SNAP_COMMON"
+)
 
 parser.add_argument(
     "--shared-data-path",
-    help="The path to which the relevant common devices app files such as robot-unique-id are stored.",
+    help="The path to which the relevant common devices app files \
+          such as robot-unique-id are stored.",
     type=str,
-    default=os.getcwd()
+    default=os.getcwd(),
 )
 
 parser.add_argument("--config", is_config_file=True, help="Config file path.")
@@ -59,9 +69,13 @@ def main():  # pragma: no cover
 
     logger.debug(f"Machine id: {machine_id}")
 
-    if  args.action == "write-uid":
+    if args.action == "write-uid":
         try:
-            write_data(machine_id, filename="device_id.txt", folder=args.shared_data_path)
+            write_data(
+                machine_id,
+                filename="device_id.txt",
+                folder=args.shared_data_path,
+            )
             return
         except Exception as e:
             logger.error(f"Failed to {args.action}: {e}")

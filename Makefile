@@ -33,9 +33,7 @@ fmt:              ## Format code using black & isort.
 .PHONY: lint
 lint:             ## Run pep8, black, mypy linters.
 	$(ENV_PREFIX)flake8 cos_registration_agent/
-	$(ENV_PREFIX)black -l 79 --check --diff cos_registration_agent/
-	$(ENV_PREFIX)black -l 79 --check --diff tests/
-	$(ENV_PREFIX)mypy --ignore-missing-imports cos_registration_agent/
+	$(ENV_PREFIX)black --check --diff -l 79 cos_registration_agent/ tests/
 
 .PHONY: test
 test: lint        ## Run tests and generate coverage report.

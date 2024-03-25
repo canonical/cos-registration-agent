@@ -11,8 +11,7 @@ class SSHKeysManager:
     """Class to manage device SSH keys."""
 
     def _generate_ssh_keypair(self, public_exponent=65537, key_size=2048):
-        """
-        Generate SSH keypair.
+        """Generate SSH keypair.
 
         Returns:
             tuple: Private key and public key.
@@ -54,6 +53,7 @@ class SSHKeysManager:
         try:
             write_data(private_key, "device_rsa_key", folder)
             write_data(public_key, "device_rsa_key.pub", folder)
+            return public_key
         except Exception as e:
             logger.error(f"Error setting up SSH keys: {e}")
             raise e

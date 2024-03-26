@@ -121,8 +121,8 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-def main():  # pragma: no cover
-
+def main():
+    # flake8: noqa
     if args.log_level:
         logging.basicConfig(level=getattr(logging, args.log_level))
 
@@ -148,7 +148,7 @@ def main():  # pragma: no cover
             logger.error(f"Failed to {args.action}: {e}")
             return
 
-    cos_registration_agent = CosRegistrationAgent(args.url)
+    cos_registration_agent = CosRegistrationAgent(args.url, device_id)
     ssh_key_manager = SSHKeysManager()
 
     try:
@@ -197,9 +197,9 @@ def main():  # pragma: no cover
                 cos_registration_agent.patch_dashboards(
                     args.foxglove_dashboards
                 )
-            cos_registration_agent.patch_device(device_id, data_to_update)
+            cos_registration_agent.patch_device(data_to_update)
         elif args.action == "delete":
-            cos_registration_agent.delete_device(device_id)
+            cos_registration_agent.delete_device()
 
     except Exception as e:
         logger.error(f"Failed to {args.action}: {e}")

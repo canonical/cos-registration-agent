@@ -14,7 +14,8 @@ class SSHKeysManager:
         """Generate SSH keypair.
 
         Returns:
-            tuple: Private key and public key.
+            tuple: private key and public key.
+
         """
         key = rsa.generate_private_key(
             backend=default_backend(),
@@ -38,8 +39,7 @@ class SSHKeysManager:
         return private_key, public_key
 
     def setup(self, folder, public_exponent=65537, key_size=2048):
-        """
-        Generate SSH keys and write them to a folder
+        """Generate SSH keys and write them to a folder.
 
         Args:
             public_exponent (int): The public exponent of the new key.

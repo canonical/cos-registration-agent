@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_machine_ip_address() -> str:
+    """Get the machine ip address."""
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))

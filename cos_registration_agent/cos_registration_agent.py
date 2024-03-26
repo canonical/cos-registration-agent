@@ -16,7 +16,7 @@ class CosRegistrationAgent:
 
     def __init__(self, cos_server_url: str, device_id: str):
         """Init COS registration agent."""
-        self.cos_server_url = cos_server_url.rstrip("/") + "/"
+        self.cos_server_url = cos_server_url
         self.cos_devices_url = urljoin(
             self.cos_server_url, API_VERSION + "devices/"
         )
@@ -25,6 +25,9 @@ class CosRegistrationAgent:
         )
 
         self.device_id = device_id
+        self.device_id_url = urljoin(
+            self.cos_devices_url, self.device_id + "/"
+        )
         server_status = requests.get(self.cos_devices_url)
         if not server_status.status_code == 200:
             error_message = "COS registration server health check failed, \
@@ -32,11 +35,7 @@ class CosRegistrationAgent:
             logger.error(error_message)
             raise RuntimeError(error_message)
 
-    @property
-    def _device_id_url(self):
-        return urljoin(self.cos_devices_url, self.device_id)
-
-    def register_device(self, **fields: Union[str, Set[str]]):
+    def register_device(self, **fields: Union[str, Set[str]]) -> None:
         """Register device on the COS registration server.
 
         Args:
@@ -60,9 +59,9 @@ class CosRegistrationAgent:
 
         logger.info("Device created")
 
-    def delete_device(self):
+    def delete_device(self) -> None:
         """Delete device from the COS registration server."""
-        response = requests.delete(self._device_id_url)
+        response = requests.delete(self.device_id_url)
         if response.status_code != 204:
             logger.error(
                 f"Could not delete device, \
@@ -73,21 +72,19 @@ class CosRegistrationAgent:
 
     def _get_device_data(self):
         """Retrieve devices data from the COS Registration server."""
-        response = requests.get(self._device_id_url)
+        response = requests.get(self.device_id_url)
         if response.status_code == 200:
             return response.json()
         elif response.status_code == 404:
-            logger.error(
-                f"Could not find device data at {self._device_id_url}"
-            )
+            logger.error(f"Could not find device data at {self.device_id_url}")
             return None
         else:
-            raise Exception(
+            raise FileNotFoundError(
                 f"Failed to retrieve device data. \
                 Status code: {response.status_code}"
             )
 
-    def patch_device(self, updated_device_data: dict):
+    def patch_device(self, updated_device_data: dict) -> None:
         """Patch device data on the COS Registration server.
 
         Args:
@@ -98,17 +95,13 @@ class CosRegistrationAgent:
             return
 
         device_current_data = self._get_device_data()
-        device_id_url = self._device_id_url + "/"
+        device_id_url = self.device_id_url
 
         device_patched_data = {**device_current_data, **updated_device_data}
 
         for key, value in device_patched_data.items():
             if key in device_current_data and key in updated_device_data:
-                if isinstance(device_current_data[key], list):
-                    merged = list(set(device_current_data[key] + value))
-                else:
-                    merged = updated_device_data[key]
-                device_patched_data[key] = merged
+                device_patched_data[key] = value
 
         response = requests.patch(device_id_url, json=device_patched_data)
         if response.status_code != 201:
@@ -118,7 +111,7 @@ class CosRegistrationAgent:
                 Error: {error_details}"
             )
 
-    def add_dashboards(self, dashboard_path: Path, application: str):
+    def add_dashboards(self, dashboard_path: Path, application: str) -> None:
         """Register dashboards on the COS registration server.
 
         Args:
@@ -152,7 +145,7 @@ class CosRegistrationAgent:
             logger.info("Dashboard added")
 
     def _get_dashboard_data(self, dashboard_id_url: str):
-        """Retrieve dashboard data from the COS Registration server.
+        """Retrieve dashboard data from the COS registration server.
 
         Args:
         - dashboard_id_url(str): the url to get the dashboard data from.
@@ -161,18 +154,18 @@ class CosRegistrationAgent:
         if response.status_code == 200:
             return response.json()
         elif response.status_code == 404:
-            logger.error(
+            logger.warning(
                 f"Could not find dashboard data at {dashboard_id_url}"
             )
             return None
         else:
-            raise Exception(
-                f"Failed to retrieve device data. \
+            raise FileNotFoundError(
+                f"Failed to retrieve dashboard data. \
                 Status code: {response.status_code}"
             )
 
-    def patch_dashboards(self, dashboard_path: Path, application: str):
-        """Patch dashboard data on the COS Registration server.
+    def patch_dashboards(self, dashboard_path: Path, application: str) -> None:
+        """Patch dashboard data on the COS registration server.
 
         Args:
         - dashboard_path(str): the path in which the dashboards are stored.
@@ -192,7 +185,7 @@ class CosRegistrationAgent:
                     current_dashboard_data = self._get_dashboard_data(
                         dashboard_id_url
                     )
-                    if updated_dashboard_data is None:
+                    if current_dashboard_data is None:
                         self._add_dashboard(dashboard_file, application)
                     else:
                         if current_dashboard_data != updated_dashboard_data:
@@ -203,7 +196,7 @@ class CosRegistrationAgent:
 
     def _patch_dashboard(
         self, dashboard_id_url: str, updated_dashboard_data: dict
-    ):
+    ) -> None:
         response = requests.patch(
             dashboard_id_url, json=updated_dashboard_data
         )

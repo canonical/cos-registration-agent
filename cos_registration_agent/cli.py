@@ -17,11 +17,6 @@ logger = logging.getLogger(__name__)
 parser = configargparse.get_argument_parser()
 
 
-def list_of_strings(arg):
-    """Split list of strings arguments."""
-    return arg.split(",")
-
-
 action_subparsers = parser.add_subparsers(
     dest="action", help="Action to perform"
 )
@@ -44,13 +39,13 @@ setup_parser.add_argument(
 setup_parser.add_argument(
     "--device-grafana-dashboards",
     help="list of grafana dashboards used by this device",
-    type=list_of_strings,
+    nargs="+",
     default=[],
 )
 setup_parser.add_argument(
     "--device-foxglove-dashboards",
     help="list of foxglove dashboards used by this device",
-    type=list_of_strings,
+    nargs="+",
     default=[],
 )
 
@@ -73,12 +68,12 @@ update_parser.add_argument(
 update_parser.add_argument(
     "--device-grafana-dashboards",
     help="Update device grafana dashboards list",
-    type=list_of_strings,
+    nargs="+",
 )
 update_parser.add_argument(
     "--device-foxglove-dashboards",
     help="Update device foxglove dashboards list",
-    type=list_of_strings,
+    nargs="+",
 )
 update_parser.add_argument(
     "--grafana-dashboards",
@@ -136,10 +131,10 @@ def main():
     else:
         device_id = get_machine_id()
 
-    logger.debug(f"Machine id: {device_id}")
+    logger.debug(f"Device id: {device_id}")
 
     device_ip_address = get_machine_ip_address()
-    logger.debug(f"Machine ip address: {device_ip_address}")
+    logger.debug(f"Device ip address: {device_ip_address}")
 
     if args.action == "write-uid":
         try:

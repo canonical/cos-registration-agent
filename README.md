@@ -80,7 +80,8 @@ defaults.
 
 Setup device with custom grafana dashboard example:
 ```
-cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup --url http://127.0.0.1:8000/ --grafana-dashboards /device_dashboards/grafana_dashboards  --device-grafana-dashboards "2"
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup --url http://127.0.0.1:8000/ --grafana-dashboards /home/giuseppe/device_dashboards/grafana_dashboards  --device-grafana-dashboards my_dashboard1 my_dashboard2
+
 ```
 
 Patch grafana dashboards:

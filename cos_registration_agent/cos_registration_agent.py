@@ -20,14 +20,8 @@ class CosRegistrationAgent:
         self.cos_devices_url = urljoin(
             self.cos_server_url, API_VERSION + "devices/"
         )
-        self.cos_device_url = urljoin(
-            self.cos_server_url, API_VERSION + "device/"
-        )
         self.cos_applications_url = urljoin(
             self.cos_server_url, API_VERSION + "applications/"
-        )
-        self.cos_application_url = urljoin(
-            self.cos_server_url, API_VERSION + "application/"
         )
 
         self.device_id = device_id

@@ -188,13 +188,13 @@ def main():
                 )
                 data_to_update["public_ssh_key"] = public_ssh_key
             if args.device_grafana_dashboards:
-                data_to_update[
-                    "grafana_dashboards"
-                ] = args.device_grafana_dashboards
+                data_to_update["grafana_dashboards"] = (
+                    args.device_grafana_dashboards
+                )
             if args.device_foxglove_dashboards:
-                data_to_update[
-                    "foxglove_dashboards"
-                ] = args.device_foxglove_dashboards
+                data_to_update["foxglove_dashboards"] = (
+                    args.device_foxglove_dashboards
+                )
             if args.grafana_dashboards:
                 cos_registration_agent.patch_dashboards(
                     dashboard_path=args.grafana_dashboards,

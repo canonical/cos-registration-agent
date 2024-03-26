@@ -61,6 +61,11 @@ update_parser = action_subparsers.add_parser(
 # Arguments to update the cos device and its dashboards
 update_parser.add_argument("--url", help="COS base IP/URL", type=str)
 update_parser.add_argument(
+    "--update-ip-address",
+    help="Update device ip address",
+    action="store_true",
+)
+update_parser.add_argument(
     "--update-ssh-keys",
     help="Update device public ssh keys",
     action="store_true",
@@ -78,12 +83,12 @@ update_parser.add_argument(
 update_parser.add_argument(
     "--grafana-dashboards",
     help="Update grafana dashboards",
-    type=list_of_strings,
+    type=Path,
 )
 update_parser.add_argument(
     "--foxglove-studio-dashboards",
     help="Update foxglove studio dashboards foxglove dashboard",
-    type=list_of_strings,
+    type=Path,
 )
 
 
@@ -175,7 +180,8 @@ def main():
             )
         elif args.action == "update":
             data_to_update = {}
-            data_to_update["address"] = get_machine_ip_address()
+            if args.update_ip_address:
+                data_to_update["address"] = get_machine_ip_address()
             if args.update_ssh_keys:
                 public_ssh_key = ssh_key_manager.setup(
                     folder=args.shared_data_path
@@ -191,11 +197,13 @@ def main():
                 ] = args.device_foxglove_dashboards
             if args.grafana_dashboards:
                 cos_registration_agent.patch_dashboards(
-                    args.grafana_dashboards
+                    dashboard_path=args.grafana_dashboards,
+                    application="grafana",
                 )
             if args.foxglove_studio_dashboards:
                 cos_registration_agent.patch_dashboards(
-                    args.foxglove_dashboards
+                    dashboard_path=args.foxglove_dashboards,
+                    application="foxglove",
                 )
             cos_registration_agent.patch_device(data_to_update)
         elif args.action == "delete":

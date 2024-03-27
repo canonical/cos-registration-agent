@@ -1,3 +1,5 @@
+"""The COS registration agent."""
+
 import json
 import logging
 from typing import Set, Union
@@ -23,13 +25,15 @@ class CosRegistrationAgent:
         self.cos_applications_url = urljoin(
             self.cos_server_url, API_VERSION + "applications/"
         )
-
+        self.cos_health_url = urljoin(
+            self.cos_server_url, API_VERSION + "health"
+        )
         self.device_id = device_id
         self.device_id_url = urljoin(
             self.cos_devices_url, self.device_id + "/"
         )
-        server_status = requests.get(self.cos_devices_url)
-        if not server_status.status_code == 200:
+        server_health_status = requests.get(self.cos_health_url)
+        if not server_health_status.status_code == 200:
             error_message = "COS registration server health check failed, \
                     make sure the server is reachable"
             logger.error(error_message)

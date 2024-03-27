@@ -23,7 +23,7 @@ action_subparsers = parser.add_subparsers(
 
 # Arguments to setup and register the cos device
 setup_parser = action_subparsers.add_parser(
-    "setup", help="Add custom device dashboards and register device"
+    "setup", help="Register device and add custom dashboards"
 )
 setup_parser.add_argument("--url", help="COS base IP/URL", type=str)
 setup_parser.add_argument(
@@ -50,7 +50,7 @@ setup_parser.add_argument(
 )
 
 update_parser = action_subparsers.add_parser(
-    "update", help="Update custom device infos"
+    "update", help="Update custom device data and dashboards"
 )
 
 # Arguments to update the cos device and its dashboards
@@ -88,7 +88,7 @@ update_parser.add_argument(
 
 
 writeuid_parser = action_subparsers.add_parser(
-    "write-uid", help="Write device unique ID to $SNAP_COMMON"
+    "write-uid", help="Write device unique ID to a file"
 )
 
 parser.add_argument(
@@ -133,7 +133,7 @@ def main():
 
     logger.debug(f"Device id: {device_id}")
 
-    device_ip_address = get_machine_ip_address()
+    device_ip_address = get_machine_ip_address(args.url)
     logger.debug(f"Device ip address: {device_ip_address}")
 
     if args.action == "write-uid":

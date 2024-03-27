@@ -1,3 +1,5 @@
+"""Class to manage device SSH keys."""
+
 import logging
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa

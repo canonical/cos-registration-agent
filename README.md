@@ -53,9 +53,9 @@ usage: cos-registration-agent [-h] [--grafana-service-token GRAFANA_SERVICE_TOKE
 positional arguments:
   {setup,update,write-uid,delete}
                         Action to perform
-    setup               Setup Grafana dashboards
-    update              Update Grafana dashboards
-    write-uid           Write device unique ID to file
+    setup               Register device and add custom dashboards device
+    update              Update custom device data and dashboards
+    write-uid           Write device unique ID to a file
     delete              Delete device from server
 options:
   -h, --help            show this help message and exit

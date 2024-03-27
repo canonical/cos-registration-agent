@@ -1,3 +1,5 @@
+"""MOdule to write the relevant device info to filesystem."""
+
 import logging
 import os
 
@@ -11,8 +13,6 @@ def write_data(data, filename, folder):
     - data (str): the data to be written to the file.
     - filename (str): the name of the file to which the data will be written.
     - folder (str, optional): the folder in which the file will be saved.
-      If the folder is a SNAP env path such as $SNAP_COMMON,
-      it will be detected and the path built accordingly.
     Returns:
     - None: if writing successfull.
 

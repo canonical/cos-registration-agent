@@ -1,3 +1,5 @@
+"""Module to retrieve the machine id."""
+
 import logging
 
 logger = logging.getLogger(__name__)

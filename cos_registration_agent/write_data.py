@@ -1,4 +1,4 @@
-"""MOdule to write the relevant device info to filesystem."""
+"""Module to write the relevant device info to filesystem."""
 
 import logging
 import os

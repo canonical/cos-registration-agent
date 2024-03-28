@@ -1,3 +1,5 @@
+"""Class to manage device SSH keys."""
+
 import logging
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -11,11 +13,11 @@ class SSHKeysManager:
     """Class to manage device SSH keys."""
 
     def _generate_ssh_keypair(self, public_exponent=65537, key_size=2048):
-        """
-        Generate SSH keypair.
+        """Generate SSH keypair.
 
         Returns:
-            tuple: Private key and public key.
+            tuple: private key and public key.
+
         """
         key = rsa.generate_private_key(
             backend=default_backend(),
@@ -39,8 +41,7 @@ class SSHKeysManager:
         return private_key, public_key
 
     def setup(self, folder, public_exponent=65537, key_size=2048):
-        """
-        Generate SSH keys and write them to a folder
+        """Generate SSH keys and write them to a folder.
 
         Args:
             public_exponent (int): The public exponent of the new key.
@@ -54,6 +55,7 @@ class SSHKeysManager:
         try:
             write_data(private_key, "device_rsa_key", folder)
             write_data(public_key, "device_rsa_key.pub", folder)
+            return public_key
         except Exception as e:
             logger.error(f"Error setting up SSH keys: {e}")
             raise e

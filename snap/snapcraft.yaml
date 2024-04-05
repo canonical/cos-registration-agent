@@ -21,13 +21,25 @@ plugs:
   rob-cos-common-write:
     interface: content
     target: $SNAP_COMMON/rob-cos-shared-data
+  configuration-read:
+    interface: content
+    target: $SNAP_COMMON/configuration
 
 parts:
+  local-files:
+    plugin: dump
+    source: snap/local/
+    organize:
+      '*.sh': usr/bin/
   cos-registration-agent:
     plugin: python
     source: .
 
 apps:
+  update-device-configuration:
+    command: usr/bin/update-device-configuration.sh
+    daemon: oneshot
+    install-mode: disable
   cos-registration-agent:
     command: bin/cos-registration-agent
-    plugs: [network, rob-cos-common-write]
+    plugs: [network, rob-cos-common-write, configuration-read]

@@ -17,8 +17,9 @@ logger = logging.getLogger(__name__)
 parser = configargparse.get_argument_parser()
 
 action_subparsers = parser.add_subparsers(
-    dest="action", help="Action to perform",
-    parser_class=configargparse.ArgParser
+    dest="action",
+    help="Action to perform",
+    parser_class=configargparse.ArgParser,
 )
 
 # Arguments to setup and register the cos device
@@ -46,11 +47,7 @@ setup_parser.add_argument(
 )
 
 setup_parser.add_argument(
-    '-c',
-    '--config',
-    is_config_file=True,
-    nargs='?',
-    help='Config file path'
+    "-c", "--config", is_config_file=True, nargs="?", help="Config file path"
 )
 
 update_parser = action_subparsers.add_parser(
@@ -85,10 +82,7 @@ update_parser.add_argument(
     nargs="+",
 )
 update_parser.add_argument(
-    "-c",
-    "--config",
-    is_config_file=True,
-    help="Config file path."
+    "-c", "--config", is_config_file=True, nargs="?", help="Config file path"
 )
 
 writeuid_parser = action_subparsers.add_parser(
@@ -137,7 +131,6 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-print(args)
 
 def main():
     # flake8: noqa

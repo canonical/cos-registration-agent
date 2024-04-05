@@ -133,7 +133,12 @@ class CosRegistrationAgent:
             self.cos_applications_url, application + "/dashboards/"
         )
         with open(dashboard_file) as dashboard:
-            dashboard_json = json.load(dashboard)
+            dashboard_content_json = json.load(dashboard)
+            dashboard_name = Path(dashboard_file).stem
+            dashboard_json = {
+                "uid": dashboard_name,
+                "dashboard": dashboard_content_json,
+            }
             response = requests.post(
                 application_url,
                 json=dashboard_json,

@@ -16,26 +16,22 @@ logger = logging.getLogger(__name__)
 
 parser = configargparse.get_argument_parser()
 
-
 action_subparsers = parser.add_subparsers(
-    dest="action", help="Action to perform"
+    dest="action", help="Action to perform",
+    parser_class=configargparse.ArgParser
 )
 
 # Arguments to setup and register the cos device
 setup_parser = action_subparsers.add_parser(
     "setup", help="Register device and add custom dashboards"
 )
+setup_parser.add_argument(
+    "--uid",
+    help="Robot unique ID, default set to machine ID.",
+    type=str,
+)
 setup_parser.add_argument("--url", help="COS base IP/URL", type=str)
-setup_parser.add_argument(
-    "--grafana-dashboards",
-    help="path to the grafana dashboard",
-    type=Path,
-)
-setup_parser.add_argument(
-    "--foxglove-studio-dashboards",
-    help="path to the foxglove dashboard",
-    type=Path,
-)
+
 setup_parser.add_argument(
     "--device-grafana-dashboards",
     help="list of grafana dashboards used by this device",
@@ -49,11 +45,24 @@ setup_parser.add_argument(
     default=[],
 )
 
+setup_parser.add_argument(
+    '-c',
+    '--config',
+    is_config_file=True,
+    nargs='?',
+    help='Config file path'
+)
+
 update_parser = action_subparsers.add_parser(
     "update", help="Update custom device data and dashboards"
 )
 
 # Arguments to update the cos device and its dashboards
+update_parser.add_argument(
+    "--uid",
+    help="Robot unique ID, default set to machine ID.",
+    type=str,
+)
 update_parser.add_argument("--url", help="COS base IP/URL", type=str)
 update_parser.add_argument(
     "--update-ip-address",
@@ -76,19 +85,28 @@ update_parser.add_argument(
     nargs="+",
 )
 update_parser.add_argument(
-    "--grafana-dashboards",
-    help="Update grafana dashboards",
-    type=Path,
+    "-c",
+    "--config",
+    is_config_file=True,
+    help="Config file path."
 )
-update_parser.add_argument(
-    "--foxglove-studio-dashboards",
-    help="Update foxglove studio dashboards foxglove dashboard",
-    type=Path,
-)
-
 
 writeuid_parser = action_subparsers.add_parser(
     "write-uid", help="Write device unique ID to a file"
+)
+
+delete_parser = action_subparsers.add_parser(
+    "delete", help="Delete device from server"
+)
+delete_parser.add_argument("--url", help="COS base IP/URL", type=str)
+
+parser.add_argument("--config", is_config_file=True, help="Config file path.")
+parser.add_argument("--url", help="COS base IP/URL", type=str)
+
+parser.add_argument(
+    "--uid",
+    help="Robot unique ID, default set to machine ID.",
+    type=str,
 )
 
 parser.add_argument(
@@ -99,17 +117,16 @@ parser.add_argument(
     default=os.getcwd(),
 )
 
-delete_parser = action_subparsers.add_parser(
-    "delete", help="Delete device from server"
+parser.add_argument(
+    "--grafana-dashboards",
+    help="path to the grafana dashboard",
+    type=Path,
 )
-delete_parser.add_argument("--url", help="COS base IP/URL", type=str)
-
-parser.add_argument("--config", is_config_file=True, help="Config file path.")
 
 parser.add_argument(
-    "--robot-unique-id",
-    help="Robot unique ID, default set to machine ID.",
-    type=str,
+    "--foxglove-studio-dashboards",
+    help="path to the foxglove dashboard",
+    type=Path,
 )
 
 parser.add_argument(
@@ -120,21 +137,12 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+print(args)
 
 def main():
     # flake8: noqa
     if args.log_level:
         logging.basicConfig(level=getattr(logging, args.log_level))
-
-    if args.robot_unique_id:
-        device_id = args.robot_unique_id
-    else:
-        device_id = get_machine_id()
-
-    logger.debug(f"Device id: {device_id}")
-
-    device_ip_address = get_machine_ip_address(args.url)
-    logger.debug(f"Device ip address: {device_ip_address}")
 
     if args.action == "write-uid":
         try:
@@ -147,6 +155,16 @@ def main():
         except Exception as e:
             logger.error(f"Failed to {args.action}: {e}")
             return
+
+    if args.uid:
+        device_id = args.uid
+    else:
+        device_id = get_machine_id()
+
+    logger.debug(f"Device id: {device_id}")
+
+    device_ip_address = get_machine_ip_address(args.url)
+    logger.debug(f"Device ip address: {device_ip_address}")
 
     cos_registration_agent = CosRegistrationAgent(args.url, device_id)
     ssh_key_manager = SSHKeysManager()

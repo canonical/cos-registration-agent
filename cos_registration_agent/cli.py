@@ -1,16 +1,16 @@
 """CLI interface for cos_registration_agent project."""
 
 import logging
-
-import configargparse
 import os
 from pathlib import Path
+
+import configargparse
 
 from cos_registration_agent.cos_registration_agent import CosRegistrationAgent
 from cos_registration_agent.machine_id import get_machine_id
 from cos_registration_agent.machine_ip_address import get_machine_ip_address
-from cos_registration_agent.write_data import write_data
 from cos_registration_agent.ssh_key_manager import SSHKeysManager
+from cos_registration_agent.write_data import write_data
 
 logger = logging.getLogger(__name__)
 

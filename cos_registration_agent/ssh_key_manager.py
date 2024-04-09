@@ -1,9 +1,11 @@
 """Class to manage device SSH keys."""
 
 import logging
+
+from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.backends import default_backend
+
 from cos_registration_agent.write_data import write_data
 
 logger = logging.getLogger(__name__)

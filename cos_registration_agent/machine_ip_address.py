@@ -17,9 +17,12 @@ def get_machine_ip_address(url: str) -> str:
         with IPRoute() as ipr:
             route_info = ipr.route("get", dst=host)
 
-        # we cannot create sockets within snaps.
+        if len(route_info) < 1:
+            raise ConnectionError(f"Couldn't reach {host}")
+
+        # We cannot create sockets within snaps.
         # Using pyroute2, this for loop is necessary
-        # to deal with the disgraceful tuple provided by IPRoute get
+        # to deal with the disgraceful tuple provided by IPRoute get.
         for attr in route_info[0]["attrs"]:
             if attr[0] == "RTA_PREFSRC":
                 ip_address = attr[1]

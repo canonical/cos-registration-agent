@@ -40,6 +40,7 @@ apps:
     command: usr/bin/update-device-configuration.sh
     daemon: oneshot
     install-mode: disable
+    plugs: [network, rob-cos-common-write, configuration-read]
   cos-registration-agent:
     command: bin/cos-registration-agent
     plugs: [network, rob-cos-common-write, configuration-read]

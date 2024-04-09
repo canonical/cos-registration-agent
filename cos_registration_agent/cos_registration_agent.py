@@ -2,10 +2,11 @@
 
 import json
 import logging
-from typing import Set, Union
-import requests
-from urllib.parse import urljoin
 from pathlib import Path
+from typing import Set, Union
+from urllib.parse import urljoin
+
+import requests
 
 logger = logging.getLogger(__name__)
 

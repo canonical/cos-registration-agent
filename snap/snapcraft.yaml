@@ -25,6 +25,10 @@ plugs:
     interface: content
     target: $SNAP_COMMON/configuration
 
+hooks:
+  connect-plug-configuration-read:
+    plugs: [network]
+
 parts:
   local-files:
     plugin: dump

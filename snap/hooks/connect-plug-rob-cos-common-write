@@ -1,3 +1,5 @@
 #!/bin/sh -e
 
-$SNAP/bin/cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data write-uid
+if [ $(snapctl is-connected configuration-read) ]; then
+    usr/bin/register-device.sh
+fi

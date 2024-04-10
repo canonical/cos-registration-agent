@@ -1,5 +1,5 @@
 #!/bin/sh -e
 
 if [ $(snapctl is-connected configuration-read) ]; then
-    usr/bin/register-device.sh
+    $SNAP/usr/bin/register-device.sh
 fi

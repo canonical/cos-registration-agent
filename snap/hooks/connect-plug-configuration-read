@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-if [ $(snapctl is-connected rob-cos-common-write) ]; then
+if snapctl is-connected rob-cos-common-write ; then
     $SNAP/usr/bin/register-device.sh
 fi
 

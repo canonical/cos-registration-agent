@@ -28,6 +28,8 @@ plugs:
 hooks:
   connect-plug-configuration-read:
     plugs: [network]
+  disconnect-plug-configuration-read:
+    plugs: [network]
 
 parts:
   local-files:

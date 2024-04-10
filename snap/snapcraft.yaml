@@ -28,6 +28,8 @@ plugs:
 hooks:
   connect-plug-configuration-read:
     plugs: [network]
+  connect-plug-rob-cos-common-write:
+    plugs: [network]
   remove:
     plugs: [network, configuration-read]
 

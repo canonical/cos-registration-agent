@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+CONFIGURATION_FILE_PATH=$SNAP_COMMON/configuration/device.yaml
+
+if [ ! -f "$CONFIGURATION_FILE_PATH" ]; then
+    echo "Configuration file '$CONFIGURATION_FILE_PATH' does not exist."
+    exit 1
+fi
+
+URL=$(grep '^url:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
+
+$SNAP/bin/cos-registration-agent delete --url $URL

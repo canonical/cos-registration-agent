@@ -27,12 +27,13 @@ class CosRegistrationAgent:
             self.cos_server_url, API_VERSION + "applications/"
         )
         self.cos_health_url = urljoin(
-            self.cos_server_url, API_VERSION + "health"
+            self.cos_server_url, API_VERSION + "health/"
         )
         self.device_id = device_id
         self.device_id_url = urljoin(
             self.cos_devices_url, self.device_id + "/"
         )
+
         server_health_status = requests.get(self.cos_health_url)
         if not server_health_status.status_code == 200:
             error_message = "COS registration server health check failed, \

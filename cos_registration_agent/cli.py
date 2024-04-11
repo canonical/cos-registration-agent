@@ -169,9 +169,11 @@ def main():
 
     try:
         if args.action == "setup":
-            public_ssh_key = ssh_key_manager.setup(
-                folder=args.shared_data_path
-            )
+            (
+                private_ssh_key,
+                public_ssh_key,
+            ) = ssh_key_manager.generate_ssh_keypair()
+
             if args.grafana_dashboards:
                 cos_registration_agent.add_dashboards(
                     dashboard_path=args.grafana_dashboards,
@@ -182,13 +184,22 @@ def main():
                     dashboard_path=args.foxglove_studio_dashboards,
                     application="foxglove",
                 )
-            cos_registration_agent.register_device(
-                uid=device_id,
-                address=device_ip_address,
-                public_ssh_key=public_ssh_key,
-                grafana_dashboards=args.device_grafana_dashboards,
-                foxglove_dashboards=args.device_foxglove_dashboards,
+            try:
+                cos_registration_agent.register_device(
+                    uid=device_id,
+                    address=device_ip_address,
+                    public_ssh_key=public_ssh_key,
+                    grafana_dashboards=args.device_grafana_dashboards,
+                    foxglove_dashboards=args.device_foxglove_dashboards,
+                )
+            except SystemError as e:
+                logger.error(f"Could not create device:{e}")
+                return
+
+            public_ssh_key = ssh_key_manager.write_keys(
+                private_ssh_key, public_ssh_key, folder=args.shared_data_path
             )
+
         elif args.action == "update":
             data_to_update = {}
             if args.update_ip_address:

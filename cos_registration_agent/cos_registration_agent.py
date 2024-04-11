@@ -62,6 +62,7 @@ class CosRegistrationAgent:
                 response status code is {response.status_code}: \
                 {response.json()}"
             )
+            raise SystemError
 
         logger.info("Device created")
 

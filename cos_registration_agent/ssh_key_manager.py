@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class SSHKeysManager:
     """Class to manage device SSH keys."""
 
-    def _generate_ssh_keypair(self, public_exponent=65537, key_size=2048):
+    def generate_ssh_keypair(self, public_exponent=65537, key_size=2048):
         """Generate SSH keypair.
 
         Returns:
@@ -42,22 +42,17 @@ class SSHKeysManager:
         public_key = public_key.decode("utf-8")
         return private_key, public_key
 
-    def setup(self, folder, public_exponent=65537, key_size=2048):
+    def write_keys(self, private_ssh_key, public_ssh_key, folder):
         """Generate SSH keys and write them to a folder.
 
         Args:
-            public_exponent (int): The public exponent of the new key.
-            key_size (int): The length of the modulus in bits.
+            private_ssh_key (int): The private ssh key.
+            public_ssh_key (int): The public ssh key.
             folder (str): Folder to save the keys.
         """
-        private_key, public_key = self._generate_ssh_keypair(
-            public_exponent, key_size
-        )
-
         try:
-            write_data(private_key, "device_rsa_key", folder)
-            write_data(public_key, "device_rsa_key.pub", folder)
-            return public_key
+            write_data(private_ssh_key, "device_rsa_key", folder)
+            write_data(public_ssh_key, "device_rsa_key.pub", folder)
         except Exception as e:
             logger.error(f"Error setting up SSH keys: {e}")
             raise e

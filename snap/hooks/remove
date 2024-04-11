@@ -8,5 +8,5 @@ if [ ! -f "$CONFIGURATION_FILE_PATH" ]; then
 fi
 
 URL=$(grep '^url:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
-
-$SNAP/bin/cos-registration-agent delete --url $URL
+UID=$(grep '^uid:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
+$SNAP/bin/cos-registration-agent delete --url $URL --uid $UID

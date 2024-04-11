@@ -92,6 +92,11 @@ writeuid_parser = action_subparsers.add_parser(
 delete_parser = action_subparsers.add_parser(
     "delete", help="Delete device from server"
 )
+delete_parser.add_argument(
+    "--uid",
+    help="Robot unique ID, default set to machine ID.",
+    type=str,
+)
 delete_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
 parser.add_argument("--config", is_config_file=True, help="Config file path.")

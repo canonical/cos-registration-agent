@@ -111,11 +111,12 @@ class CosRegistrationAgent:
                 device_patched_data[key] = value
 
         response = requests.patch(device_id_url, json=device_patched_data)
-        if response.status_code != 201:
+        if response.status_code != 200:
             error_details = response.json()
             logger.error(
                 f"Failed to patch device data. \
-                Error: {error_details}"
+                Error: {error_details}. \
+                Status code: {response.status_code}"
             )
 
     def add_dashboards(self, dashboard_path: Path, application: str) -> None:
@@ -147,7 +148,7 @@ class CosRegistrationAgent:
                 json=dashboard_json,
                 headers=HEADERS,
             )
-            if response.status_code != 201:
+            if response.status_code != 200:
                 logger.error(
                     f"Could not add dashboad, \
                     response status code is {response.status_code}: \
@@ -190,7 +191,7 @@ class CosRegistrationAgent:
             if dashboard_file.suffix == ".json" and dashboard_file.is_file():
                 with open(dashboard_file, "r") as f:
                     updated_dashboard_data = json.load(f)
-                    dashboard_id = updated_dashboard_data.get("uid")
+                    dashboard_id = dashboard_file.stem
                     dashboard_id_url = self._get_dashboard_id_url(
                         dashboard_id, application
                     )

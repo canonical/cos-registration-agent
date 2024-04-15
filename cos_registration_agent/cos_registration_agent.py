@@ -119,44 +119,6 @@ class CosRegistrationAgent:
                 Status code: {response.status_code}"
             )
 
-    def add_dashboards(self, dashboard_path: Path, application: str) -> None:
-        """Register dashboards on the COS registration server.
-
-        Args:
-        - dashboard_path(Path): the path in which the dashboards are stored.
-        - application(str): the name of the application.
-        """
-        directory = Path(dashboard_path)
-
-        for dashboard_file in directory.iterdir():
-            if dashboard_file.suffix == ".json" and dashboard_file.is_file():
-                self._add_dashboard(dashboard_file, application)
-
-    def _add_dashboard(self, dashboard_file: Path, application: str):
-        application_url = urljoin(
-            self.cos_applications_url, application + "/dashboards/"
-        )
-        with open(dashboard_file) as dashboard:
-            dashboard_content_json = json.load(dashboard)
-            dashboard_name = Path(dashboard_file).stem
-            dashboard_json = {
-                "uid": dashboard_name,
-                "dashboard": dashboard_content_json,
-            }
-            response = requests.post(
-                application_url,
-                json=dashboard_json,
-                headers=HEADERS,
-            )
-            if response.status_code != 200:
-                logger.error(
-                    f"Could not add dashboad, \
-                    response status code is {response.status_code}: \
-                    {response.json()}"
-                )
-
-            logger.info("Dashboard added")
-
     def _get_dashboard_data(self, dashboard_id_url: str):
         """Retrieve dashboard data from the COS registration server.
 
@@ -168,7 +130,7 @@ class CosRegistrationAgent:
             return response.json()
         elif response.status_code == 404:
             logger.warning(
-                f"Could not find dashboard data at {dashboard_id_url}"
+                f"Could not find dashboard data at {dashboard_id_url}. Uploading it."
             )
             return None
         else:
@@ -178,7 +140,7 @@ class CosRegistrationAgent:
             )
 
     def patch_dashboards(self, dashboard_path: Path, application: str) -> None:
-        """Patch dashboard data on the COS registration server.
+        """Add or patch dashboard on the COS registration server.
 
         Args:
         - dashboard_path(str): the path in which the dashboards are stored.
@@ -206,6 +168,31 @@ class CosRegistrationAgent:
                                 dashboard_id_url,
                                 updated_dashboard_data,
                             )
+
+    def _add_dashboard(self, dashboard_file: Path, application: str):
+        application_url = urljoin(
+            self.cos_applications_url, application + "/dashboards/"
+        )
+        with open(dashboard_file) as dashboard:
+            dashboard_content_json = json.load(dashboard)
+            dashboard_name = Path(dashboard_file).stem
+            dashboard_json = {
+                "uid": dashboard_name,
+                "dashboard": dashboard_content_json,
+            }
+            response = requests.post(
+                application_url,
+                json=dashboard_json,
+                headers=HEADERS,
+            )
+            if response.status_code != 201:
+                logger.error(
+                    f"Could not add dashboad, \
+                    response status code is {response.status_code}: \
+                    {response.json()}"
+                )
+
+            logger.info("Dashboard added")
 
     def _patch_dashboard(
         self, dashboard_id_url: str, updated_dashboard_data: dict

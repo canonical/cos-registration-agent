@@ -175,12 +175,12 @@ def main():
             ) = ssh_key_manager.generate_ssh_keypair()
 
             if args.grafana_dashboards:
-                cos_registration_agent.add_dashboards(
+                cos_registration_agent.patch_dashboards(
                     dashboard_path=args.grafana_dashboards,
                     application="grafana",
                 )
             if args.foxglove_studio_dashboards:
-                cos_registration_agent.add_dashboards(
+                cos_registration_agent.patch_dashboards(
                     dashboard_path=args.foxglove_studio_dashboards,
                     application="foxglove",
                 )

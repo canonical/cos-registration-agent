@@ -224,7 +224,7 @@ def main():
                 )
             if args.foxglove_studio_dashboards:
                 cos_registration_agent.patch_dashboards(
-                    dashboard_path=args.foxglove_dashboards,
+                    dashboard_path=args.foxglove_studio_dashboards,
                     application="foxglove",
                 )
             cos_registration_agent.patch_device(data_to_update)

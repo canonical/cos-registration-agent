@@ -197,9 +197,11 @@ class CosRegistrationAgent:
     def _patch_dashboard(
         self, dashboard_id_url: str, updated_dashboard_data: dict
     ) -> None:
-        response = requests.patch(
-            dashboard_id_url, json=updated_dashboard_data
-        )
+        dashboard_json = {
+            "dashboard": updated_dashboard_data,
+        }
+        response = requests.patch(dashboard_id_url, json=dashboard_json)
+
         if response.status_code != 200:
             error_details = response.json()
             logger.error(

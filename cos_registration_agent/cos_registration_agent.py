@@ -130,7 +130,8 @@ class CosRegistrationAgent:
             return response.json()
         elif response.status_code == 404:
             logger.warning(
-                f"Could not find dashboard data at {dashboard_id_url}. Uploading it."
+                f"Could not find dashboard data at {dashboard_id_url}."
+                "Uploading it."
             )
             return None
         else:

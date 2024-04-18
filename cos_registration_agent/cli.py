@@ -195,7 +195,7 @@ def main():
             data_to_update = {}
             data_to_update["address"] = get_machine_ip_address()
             public_ssh_key = ssh_key_manager.setup(
-                    folder=args.shared_data_path
+                folder=args.shared_data_path
             )
             data_to_update["public_ssh_key"] = public_ssh_key
             if args.device_grafana_dashboards:

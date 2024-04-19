@@ -63,6 +63,11 @@ update_parser.add_argument(
 update_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
 update_parser.add_argument(
+    "--update-ssh-keys",
+    help="Update device public ssh keys",
+    action="store_true",
+)
+update_parser.add_argument(
     "--device-grafana-dashboards",
     help="Update device grafana dashboards list",
     nargs="+",
@@ -194,10 +199,11 @@ def main():
         elif args.action == "update":
             data_to_update = {}
             data_to_update["address"] = get_machine_ip_address()
-            public_ssh_key = ssh_key_manager.setup(
-                folder=args.shared_data_path
-            )
-            data_to_update["public_ssh_key"] = public_ssh_key
+            if args.update_ssh_keys:
+                public_ssh_key = ssh_key_manager.setup(
+                    folder=args.shared_data_path
+                )
+                data_to_update["public_ssh_key"] = public_ssh_key
             if args.device_grafana_dashboards:
                 data_to_update["grafana_dashboards"] = (
                     args.device_grafana_dashboards

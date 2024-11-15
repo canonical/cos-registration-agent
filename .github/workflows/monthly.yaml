@@ -6,7 +6,7 @@ on:
 
 jobs:
   main:
-    uses: ubuntu-robotics/cos-registration-agent/.github/workflows/snap.yaml@main
+    uses: canonical/cos-registration-agent/.github/workflows/snap.yaml@main
     with:
       branch-name: "main"
 

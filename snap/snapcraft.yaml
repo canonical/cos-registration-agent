@@ -1,6 +1,6 @@
 name: cos-registration-agent
 base: core22
-version: '0.1'
+version: git
 summary: COS registration agent is identifying the robot to the COS server
 description: |
   COS registration agent is responsible for identifying 

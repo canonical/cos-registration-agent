@@ -33,7 +33,7 @@ setup(
     name="cos_registration_agent",
     version=read("cos_registration_agent", "VERSION"),
     description="Awesome cos_registration_agent created by ubuntu-robotics",
-    url="https://github.com/ubuntu-robotics/cos-registration-agent/",
+    url="https://github.com/canonical/cos-registration-agent/",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
     author="ubuntu-robotics",

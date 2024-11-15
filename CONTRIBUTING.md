@@ -10,7 +10,7 @@ This instructions are for linux base systems.
 - On github interface click on `Fork` button.
 - Clone your fork of this repo. `git clone git@github.com:YOUR_GIT_USERNAME/cos-registration-agent.git`
 - Enter the directory `cd cos-registration-agent`
-- Add upstream repo `git remote add upstream https://github.com/ubuntu-robotics/cos-registration-agent`
+- Add upstream repo `git remote add upstream https://github.com/canonical/cos-registration-agent`
 
 ## Setting up your own virtual environment
 

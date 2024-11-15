@@ -8,8 +8,8 @@ to the server (dashboard, UID, etc).
 ---
 # cos_registration_agent
 
-[![codecov](https://codecov.io/gh/ubuntu-robotics/cos-registration-agent/branch/main/graph/badge.svg?token=cos-registration-agent_token_here)](https://codecov.io/gh/ubuntu-robotics/cos-registration-agent)
-[![CI](https://github.com/ubuntu-robotics/cos-registration-agent/actions/workflows/main.yml/badge.svg)](https://github.com/ubuntu-robotics/cos-registration-agent/actions/workflows/main.yml)
+[![codecov](https://codecov.io/gh/canonical/cos-registration-agent/branch/main/graph/badge.svg?token=cos-registration-agent_token_here)](https://codecov.io/gh/canonical/cos-registration-agent)
+[![CI](https://github.com/canonical/cos-registration-agent/actions/workflows/main.yml/badge.svg)](https://github.com/canonical/cos-registration-agent/actions/workflows/main.yml)
 
 ## Features
 

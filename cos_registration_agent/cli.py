@@ -35,13 +35,13 @@ setup_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
 setup_parser.add_argument(
     "--device-grafana-dashboards",
-    help="list of grafana dashboards used by this device",
+    help="List of grafana dashboards used by this device",
     nargs="+",
     default=[],
 )
 setup_parser.add_argument(
     "--device-foxglove-dashboards",
-    help="list of foxglove dashboards used by this device",
+    help="List of foxglove dashboards used by this device",
     nargs="+",
     default=[],
 )
@@ -114,20 +114,20 @@ parser.add_argument(
 
 parser.add_argument(
     "--grafana-dashboards",
-    help="path to the grafana dashboard",
+    help="Path to the grafana dashboard",
     type=Path,
 )
 
 parser.add_argument(
     "--foxglove-studio-dashboards",
-    help="path to the foxglove dashboard",
+    help="Path to the foxglove dashboard",
     type=Path,
 )
 
 parser.add_argument(
     "--log-level",
     choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-    help="set the logging level",
+    help="Set the logging level",
 )
 
 args = parser.parse_args()

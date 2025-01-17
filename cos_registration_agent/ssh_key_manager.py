@@ -2,11 +2,12 @@
 
 import logging
 
+from cos_registration_agent.write_data import write_data
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-from cos_registration_agent.write_data import write_data
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +54,6 @@ class SSHKeysManager:
         try:
             write_data(private_ssh_key, "device_rsa_key", folder)
             write_data(public_ssh_key, "device_rsa_key.pub", folder)
-        except Exception as e:
+        except OSError as e:
             logger.error(f"Error setting up SSH keys: {e}")
             raise e

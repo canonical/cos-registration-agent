@@ -45,6 +45,18 @@ setup_parser.add_argument(
     nargs="+",
     default=[],
 )
+setup_parser.add_argument(
+    "--device-loki-alert-rules",
+    help="list of Loki alert rules to render for this device",
+    nargs="+",
+    default=[],
+)
+setup_parser.add_argument(
+    "--device-prometheus-alert-rules",
+    help="list of Prometheus alert rules to render for this device",
+    nargs="+",
+    default=[],
+)
 
 setup_parser.add_argument(
     "-c", "--config", is_config_file=True, nargs="?", help="Config file path"
@@ -54,7 +66,7 @@ update_parser = action_subparsers.add_parser(
     "update", help="Update custom device data and dashboards"
 )
 
-# Arguments to update the cos device and its dashboards
+# Arguments to update the cos device and its data
 update_parser.add_argument(
     "--uid",
     help="Robot unique ID, default set to machine ID.",
@@ -67,6 +79,7 @@ update_parser.add_argument(
     help="Update device public ssh keys",
     action="store_true",
 )
+
 update_parser.add_argument(
     "--device-grafana-dashboards",
     help="Update device grafana dashboards list",
@@ -78,6 +91,19 @@ update_parser.add_argument(
     nargs="+",
 )
 update_parser.add_argument(
+    "--device-loki-alert-rules",
+    help="Update device Loki alert rules list",
+    nargs="+",
+    default=[],
+)
+update_parser.add_argument(
+    "--device-prometheus-alert-rules",
+    help="Update device Prometheus alert rules list",
+    nargs="+",
+    default=[],
+)
+
+update_parser.add_argument(
     "-c", "--config", is_config_file=True, nargs="?", help="Config file path"
 )
 
@@ -88,6 +114,8 @@ writeuid_parser = action_subparsers.add_parser(
 delete_parser = action_subparsers.add_parser(
     "delete", help="Delete device from server"
 )
+
+# Arguments to delete the cos device and its data
 delete_parser.add_argument(
     "--uid",
     help="Robot unique ID, default set to machine ID.",
@@ -95,6 +123,7 @@ delete_parser.add_argument(
 )
 delete_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
+# Arguments shared between all the actions
 parser.add_argument("--config", is_config_file=True, help="Config file path.")
 parser.add_argument("--url", help="COS base IP/URL", type=str)
 
@@ -121,6 +150,18 @@ parser.add_argument(
 parser.add_argument(
     "--foxglove-studio-dashboards",
     help="Path to the foxglove dashboard",
+    type=Path,
+)
+
+parser.add_argument(
+    "--loki-rule-files",
+    help="Path to the Loki rule files",
+    type=Path,
+)
+
+parser.add_argument(
+    "--prometheus-rule-files",
+    help="Path to the Prometheus rule files",
     type=Path,
 )
 
@@ -180,6 +221,16 @@ def main():
                     dashboard_path=args.foxglove_studio_dashboards,
                     application="foxglove",
                 )
+            if args.loki_rule_files:
+                cos_registration_agent.patch_rule_files(
+                    dashboard_path=args.loki_rule_files,
+                    application="loki",
+                )
+            if args.prometheus_rule_files:
+                cos_registration_agent.patch_rule_files(
+                    dashboard_path=args.prometheus_rule_files,
+                    application="prometheus",
+                )
             try:
                 cos_registration_agent.register_device(
                     uid=device_id,
@@ -221,6 +272,16 @@ def main():
                 cos_registration_agent.patch_dashboards(
                     dashboard_path=args.foxglove_studio_dashboards,
                     application="foxglove",
+                )
+            if args.loki_rule_files:
+                cos_registration_agent.patch_rule_files(
+                    dashboard_path=args.loki_rule_files,
+                    application="loki",
+                )
+            if args.prometheus_rule_files:
+                cos_registration_agent.patch_rule_files(
+                    dashboard_path=args.prometheus_rule_files,
+                    application="prometheus",
                 )
             cos_registration_agent.patch_device(data_to_update)
         elif args.action == "delete":

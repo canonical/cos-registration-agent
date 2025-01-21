@@ -53,6 +53,8 @@ class CosRegistrationAgent:
         for field, value in fields.items():
             device_data[field] = value
 
+        device_data["uid"] = self.device_id
+
         json_data = json.dumps(device_data)
         response = requests.post(
             self.cos_devices_url, data=json_data, headers=HEADERS
@@ -128,7 +130,7 @@ class CosRegistrationAgent:
         """
         response = requests.get(dashboard_id_url)
         if response.status_code == 200:
-            return response.json()
+            return response.text
         elif response.status_code == 404:
             logger.warning(
                 f"Could not find dashboard data at {dashboard_id_url}."
@@ -227,7 +229,7 @@ class CosRegistrationAgent:
         response = requests.get(rule_file_id_url)
         if response.status_code == 200:
             json_data = response.json()
-            return yaml.safe_load(json_data["rules"])
+            return yaml.load(json_data["rules"], yaml.SafeLoader)
         elif response.status_code == 404:
             logger.warning(
                 f"Could not find rule file data at {rule_file_id_url}."
@@ -254,7 +256,7 @@ class CosRegistrationAgent:
             if rule_file.suffix == ".rules" and rule_file.is_file():
                 with open(rule_file, "r") as f:
                     updated_rule_file_data = yaml.safe_load(f)
-                    rule_file_id = Path(updated_rule_file_data).stem
+                    rule_file_id = rule_file.stem
                     rule_file_id_url = self._get_rule_file_id_url(
                         rule_file_id, application
                     )
@@ -302,7 +304,6 @@ class CosRegistrationAgent:
             "rules": updated_rule_file_data,
         }
         response = requests.patch(rule_file_id_url, json=dashboard_json)
-
         if response.status_code != 200:
             error_details = response.json()
             logger.error(

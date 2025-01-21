@@ -233,11 +233,12 @@ def main():
                 )
             try:
                 cos_registration_agent.register_device(
-                    uid=device_id,
                     address=device_ip_address,
                     public_ssh_key=public_ssh_key,
                     grafana_dashboards=args.device_grafana_dashboards,
                     foxglove_dashboards=args.device_foxglove_dashboards,
+                    loki_rule_files=args.device_loki_alert_rules,
+                    prometheus_rule_files=args.device_prometheus_alert_rules,
                 )
             except SystemError as e:
                 logger.error(f"Could not create device:{e}")
@@ -262,6 +263,14 @@ def main():
             if args.device_foxglove_dashboards:
                 data_to_update["foxglove_dashboards"] = (
                     args.device_foxglove_dashboards
+                )
+            if args.device_loki_alert_rules:
+                data_to_update["loki_rule_files"] = (
+                    args.device_loki_alert_rules
+                )
+            if args.device_prometheus_alert_rules:
+                data_to_update["prometheus_rule_files"] = (
+                    args.device_prometheus_alert_rules
                 )
             if args.grafana_dashboards:
                 cos_registration_agent.patch_dashboards(

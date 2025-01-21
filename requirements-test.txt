@@ -16,3 +16,4 @@ pytest
 pytest-cov
 types-requests
 types-pyyaml
+responses

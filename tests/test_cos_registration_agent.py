@@ -3,7 +3,6 @@ from unittest.mock import patch, MagicMock
 from pathlib import Path
 import responses
 import json
-import yaml
 
 
 from cos_registration_agent.cos_registration_agent import (

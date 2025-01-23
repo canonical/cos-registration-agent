@@ -1,8 +1,7 @@
 import unittest
-from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-import base64
 
 from cos_registration_agent.ssh_key_manager import SSHKeysManager
 

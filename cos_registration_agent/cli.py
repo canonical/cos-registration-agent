@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 import configargparse
+from configargparse import ArgumentParser
 
 from cos_registration_agent.cos_registration_agent import CosRegistrationAgent
 from cos_registration_agent.machine_id import get_machine_id
@@ -12,169 +13,177 @@ from cos_registration_agent.machine_ip_address import get_machine_ip_address
 from cos_registration_agent.ssh_key_manager import SSHKeysManager
 from cos_registration_agent.write_data import write_data
 
-logger = logging.getLogger(__name__)
 
-parser = configargparse.get_argument_parser()
+def _parse_args() -> ArgumentParser.parse_args:
 
-action_subparsers = parser.add_subparsers(
-    dest="action",
-    help="Action to perform",
-    parser_class=configargparse.ArgParser,
-)
+    parser = configargparse.get_argument_parser()
 
-# Arguments to setup and register the cos device
-setup_parser = action_subparsers.add_parser(
-    "setup", help="Register device and add custom dashboards"
-)
-setup_parser.add_argument(
-    "--uid",
-    help="Robot unique ID, default set to machine ID.",
-    type=str,
-)
-setup_parser.add_argument("--url", help="COS base IP/URL", type=str)
+    action_subparsers = parser.add_subparsers(
+        dest="action",
+        help="Action to perform",
+        parser_class=configargparse.ArgParser,
+    )
 
-setup_parser.add_argument(
-    "--device-grafana-dashboards",
-    help="List of grafana dashboards used by this device",
-    nargs="+",
-    default=[],
-)
-setup_parser.add_argument(
-    "--device-foxglove-dashboards",
-    help="List of foxglove dashboards used by this device",
-    nargs="+",
-    default=[],
-)
-setup_parser.add_argument(
-    "--device-loki-alert-rules",
-    help="list of Loki alert rules to render for this device",
-    nargs="+",
-    default=[],
-)
-setup_parser.add_argument(
-    "--device-prometheus-alert-rules",
-    help="list of Prometheus alert rules to render for this device",
-    nargs="+",
-    default=[],
-)
+    # Arguments to setup and register the cos device
+    setup_parser = action_subparsers.add_parser(
+        "setup", help="Register device and add custom dashboards"
+    )
+    setup_parser.add_argument(
+        "--uid",
+        help="Robot unique ID, default set to machine ID.",
+        type=str,
+    )
+    setup_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
-setup_parser.add_argument(
-    "-c", "--config", is_config_file=True, nargs="?", help="Config file path"
-)
+    setup_parser.add_argument(
+        "--device-grafana-dashboards",
+        help="List of grafana dashboards used by this device",
+        nargs="+",
+        default=[],
+    )
+    setup_parser.add_argument(
+        "--device-foxglove-dashboards",
+        help="List of foxglove dashboards used by this device",
+        nargs="+",
+        default=[],
+    )
+    setup_parser.add_argument(
+        "--device-loki-alert-rules",
+        help="list of Loki alert rules to render for this device",
+        nargs="+",
+        default=[],
+    )
+    setup_parser.add_argument(
+        "--device-prometheus-alert-rules",
+        help="list of Prometheus alert rules to render for this device",
+        nargs="+",
+        default=[],
+    )
 
-update_parser = action_subparsers.add_parser(
-    "update", help="Update custom device data and dashboards"
-)
+    setup_parser.add_argument(
+        "-c",
+        "--config",
+        is_config_file=True,
+        nargs="?",
+        help="Config file path",
+    )
 
-# Arguments to update the cos device and its data
-update_parser.add_argument(
-    "--uid",
-    help="Robot unique ID, default set to machine ID.",
-    type=str,
-)
-update_parser.add_argument("--url", help="COS base IP/URL", type=str)
+    update_parser = action_subparsers.add_parser(
+        "update", help="Update custom device data and dashboards"
+    )
 
-update_parser.add_argument(
-    "--update-ssh-keys",
-    help="Update device public ssh keys",
-    action="store_true",
-)
+    # Arguments to update the cos device and its data
+    update_parser.add_argument(
+        "--uid",
+        help="Robot unique ID, default set to machine ID.",
+        type=str,
+    )
+    update_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
-update_parser.add_argument(
-    "--device-grafana-dashboards",
-    help="Update device grafana dashboards list",
-    nargs="+",
-)
-update_parser.add_argument(
-    "--device-foxglove-dashboards",
-    help="Update device foxglove dashboards list",
-    nargs="+",
-)
-update_parser.add_argument(
-    "--device-loki-alert-rules",
-    help="Update device Loki alert rules list",
-    nargs="+",
-    default=[],
-)
-update_parser.add_argument(
-    "--device-prometheus-alert-rules",
-    help="Update device Prometheus alert rules list",
-    nargs="+",
-    default=[],
-)
+    update_parser.add_argument(
+        "--update-ssh-keys",
+        help="Update device public ssh keys",
+        action="store_true",
+    )
 
-update_parser.add_argument(
-    "-c", "--config", is_config_file=True, nargs="?", help="Config file path"
-)
+    update_parser.add_argument(
+        "--device-grafana-dashboards",
+        help="Update device grafana dashboards list",
+        nargs="+",
+    )
+    update_parser.add_argument(
+        "--device-foxglove-dashboards",
+        help="Update device foxglove dashboards list",
+        nargs="+",
+    )
+    update_parser.add_argument(
+        "--device-loki-alert-rules",
+        help="Update device Loki alert rules list",
+        nargs="+",
+        default=[],
+    )
+    update_parser.add_argument(
+        "--device-prometheus-alert-rules",
+        help="Update device Prometheus alert rules list",
+        nargs="+",
+        default=[],
+    )
 
-writeuid_parser = action_subparsers.add_parser(
-    "write-uid", help="Write device unique ID to a file"
-)
+    update_parser.add_argument(
+        "-c",
+        "--config",
+        is_config_file=True,
+        nargs="?",
+        help="Config file path",
+    )
 
-delete_parser = action_subparsers.add_parser(
-    "delete", help="Delete device from server"
-)
+    writeuid_parser = action_subparsers.add_parser(
+        "write-uid", help="Write device unique ID to a file"
+    )
 
-# Arguments to delete the cos device and its data
-delete_parser.add_argument(
-    "--uid",
-    help="Robot unique ID, default set to machine ID.",
-    type=str,
-)
-delete_parser.add_argument("--url", help="COS base IP/URL", type=str)
+    delete_parser = action_subparsers.add_parser(
+        "delete", help="Delete device from server"
+    )
 
-# Arguments shared between all the actions
-parser.add_argument("--config", is_config_file=True, help="Config file path.")
-parser.add_argument("--url", help="COS base IP/URL", type=str)
+    # Arguments to delete the cos device and its data
+    delete_parser.add_argument(
+        "--uid",
+        help="Robot unique ID, default set to machine ID.",
+        type=str,
+    )
+    delete_parser.add_argument("--url", help="COS base IP/URL", type=str)
 
-parser.add_argument(
-    "--uid",
-    help="Robot unique ID, default set to machine ID.",
-    type=str,
-)
+    # Arguments shared between all the actions
+    parser.add_argument(
+        "--config", is_config_file=True, help="Config file path."
+    )
+    parser.add_argument("--url", help="COS base IP/URL", type=str)
 
-parser.add_argument(
-    "--shared-data-path",
-    help="The path to which the relevant common devices app files \
-          such as robot-unique-id are stored.",
-    type=str,
-    default=os.getcwd(),
-)
+    parser.add_argument(
+        "--shared-data-path",
+        help="The path to which the relevant common devices app files \
+            such as robot-unique-id are stored.",
+        type=str,
+        default=os.getcwd(),
+    )
 
-parser.add_argument(
-    "--grafana-dashboards",
-    help="Path to the grafana dashboard",
-    type=Path,
-)
+    parser.add_argument(
+        "--grafana-dashboards",
+        help="Path to the grafana dashboard",
+        type=Path,
+    )
 
-parser.add_argument(
-    "--foxglove-studio-dashboards",
-    help="Path to the foxglove dashboard",
-    type=Path,
-)
+    parser.add_argument(
+        "--foxglove-studio-dashboards",
+        help="Path to the foxglove dashboard",
+        type=Path,
+    )
 
-parser.add_argument(
-    "--loki-rule-files",
-    help="Path to the Loki rule files",
-    type=Path,
-)
+    parser.add_argument(
+        "--loki-rule-files",
+        help="Path to the Loki rule files",
+        type=Path,
+    )
 
-parser.add_argument(
-    "--prometheus-rule-files",
-    help="Path to the Prometheus rule files",
-    type=Path,
-)
+    parser.add_argument(
+        "--prometheus-rule-files",
+        help="Path to the Prometheus rule files",
+        type=Path,
+    )
 
-parser.add_argument(
-    "--log-level",
-    choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-    help="Set the logging level",
-)
+    parser.add_argument(
+        "--log-level",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Set the logging level",
+    )
 
-args = parser.parse_args()
+    return parser.parse_args()
 
 
 def main():
+
+    logger = logging.getLogger(__name__)
+    args = _parse_args()
     # flake8: noqa
     if args.log_level:
         logging.basicConfig(level=getattr(logging, args.log_level))
@@ -200,10 +209,8 @@ def main():
 
     device_ip_address = get_machine_ip_address(args.url)
     logger.debug(f"Device ip address: {device_ip_address}")
-
     cos_registration_agent = CosRegistrationAgent(args.url, device_id)
     ssh_key_manager = SSHKeysManager()
-
     try:
         if args.action == "setup":
             (
@@ -244,7 +251,7 @@ def main():
                 logger.error(f"Could not create device:{e}")
                 return
 
-            public_ssh_key = ssh_key_manager.write_keys(
+            ssh_key_manager.write_keys(
                 private_ssh_key, public_ssh_key, folder=args.shared_data_path
             )
 

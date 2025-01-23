@@ -167,7 +167,8 @@ class CosRegistrationAgent:
                     if current_dashboard_data is None:
                         self._add_dashboard(dashboard_file, application)
                     else:
-                        if current_dashboard_data != updated_dashboard_data:
+                        updated_dashboard = json.dumps(updated_dashboard_data)
+                        if current_dashboard_data != updated_dashboard:
                             self._patch_dashboard(
                                 dashboard_id_url,
                                 updated_dashboard_data,
@@ -266,7 +267,8 @@ class CosRegistrationAgent:
                     if current_rule_file_data is None:
                         self._add_rule_file(rule_file, application)
                     else:
-                        if current_rule_file_data != updated_rule_file_data:
+                        updated_data = yaml.dump(updated_rule_file_data)
+                        if current_rule_file_data != updated_data:
                             self._patch_rule_file(
                                 rule_file_id_url,
                                 updated_rule_file_data,
@@ -300,10 +302,10 @@ class CosRegistrationAgent:
     def _patch_rule_file(
         self, rule_file_id_url: str, updated_rule_file_data: dict
     ) -> None:
-        dashboard_json = {
+        rule_json = {
             "rules": updated_rule_file_data,
         }
-        response = requests.patch(rule_file_id_url, json=dashboard_json)
+        response = requests.patch(rule_file_id_url, json=rule_json)
         if response.status_code != 200:
             error_details = response.json()
             logger.error(

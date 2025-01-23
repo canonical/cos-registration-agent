@@ -230,12 +230,12 @@ def main():
                 )
             if args.loki_rule_files:
                 cos_registration_agent.patch_rule_files(
-                    dashboard_path=args.loki_rule_files,
+                    rule_file_path=args.loki_rule_files,
                     application="loki",
                 )
             if args.prometheus_rule_files:
                 cos_registration_agent.patch_rule_files(
-                    dashboard_path=args.prometheus_rule_files,
+                    rule_file_path=args.prometheus_rule_files,
                     application="prometheus",
                 )
             try:
@@ -257,12 +257,11 @@ def main():
 
         elif args.action == "update":
             data_to_update = {}
-            data_to_update["address"] = get_machine_ip_address()
+            data_to_update["address"] = get_machine_ip_address(args.url)
             if args.update_ssh_keys:
-                public_ssh_key = ssh_key_manager.setup(
-                    folder=args.shared_data_path
-                )
-                data_to_update["public_ssh_key"] = public_ssh_key
+                pass
+                # TODO Retrieve the key from the shared folder
+                # data_to_update["public_ssh_key"] = public_ssh_key
             if args.device_grafana_dashboards:
                 data_to_update["grafana_dashboards"] = (
                     args.device_grafana_dashboards
@@ -291,12 +290,12 @@ def main():
                 )
             if args.loki_rule_files:
                 cos_registration_agent.patch_rule_files(
-                    dashboard_path=args.loki_rule_files,
+                    rule_file_path=args.loki_rule_files,
                     application="loki",
                 )
             if args.prometheus_rule_files:
                 cos_registration_agent.patch_rule_files(
-                    dashboard_path=args.prometheus_rule_files,
+                    rule_file_path=args.prometheus_rule_files,
                     application="prometheus",
                 )
             cos_registration_agent.patch_device(data_to_update)

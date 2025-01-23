@@ -178,7 +178,9 @@ class TestCosRegistrationAgent(unittest.TestCase):
     def test_add_dashboards(self, mock_open, mock_is_file):
 
         grafana_dashboard_name = "my-dashboard"
-        grafana_dashboard = "dashboard content"
+        grafana_dashboard = """
+        {"dashboard": "content"}
+        """
 
         agent = CosRegistrationAgent(self.server_url, self.device_uid)
 
@@ -227,7 +229,9 @@ class TestCosRegistrationAgent(unittest.TestCase):
     def test_patch_dashboards(self, mock_open, mock_is_file):
 
         grafana_dashboard_name = "my-dashboard"
-        grafana_dashboard = "dashboard content"
+        grafana_dashboard = """
+        {"dashboard": "content"}
+        """
 
         agent = CosRegistrationAgent(self.server_url, self.device_uid)
 
@@ -284,7 +288,9 @@ class TestCosRegistrationAgent(unittest.TestCase):
                     },
                 )
 
-                grafana_dashboard = "new dashboard content"
+                grafana_dashboard = """
+                {"dashboard": "new content"}
+                """
 
                 def patch_callback(request):
                     payload = json.loads(request.body)
@@ -316,7 +322,10 @@ class TestCosRegistrationAgent(unittest.TestCase):
     def test_add_rule_file(self, mock_open, mock_is_file):
 
         loki_rule_file_name = "my-rule"
-        loki_rule_file = "rule content"
+        loki_rule_file = """
+        groups:
+          - name: my_rule
+        """
 
         agent = CosRegistrationAgent(self.server_url, self.device_uid)
 
@@ -365,7 +374,10 @@ class TestCosRegistrationAgent(unittest.TestCase):
     def test_patch_rule_file(self, mock_open, mock_is_file):
 
         loki_rule_file_name = "my-rule"
-        loki_rule_file = "rule content"
+        loki_rule_file = """
+        groups:
+          - name: my_rule
+        """
 
         agent = CosRegistrationAgent(self.server_url, self.device_uid)
 
@@ -423,7 +435,10 @@ class TestCosRegistrationAgent(unittest.TestCase):
                     headers={"content-type": "application/json"},
                 )
 
-                loki_rule_file = "new rule content"
+                loki_rule_file = """
+                groups:
+                  - name: new_my_rule
+                """
 
                 def patch_callback(request):
                     payload = json.loads(request.body)

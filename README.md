@@ -43,36 +43,39 @@ sudo snap install cos-registration-agent*.snap --dangerous
 ## Usage
 
 ```
-usage: cos-registration-agent [-h] [--grafana-service-token GRAFANA_SERVICE_TOKEN]
-                              [--grafana-dashboard GRAFANA_DASHBOARD]
-                              [--shared-data-path]
-                              [--config CONFIG] [--robot-unique-id ROBOT_UNIQUE_ID]
-                              [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+usage: cos-registration-agent [-h] [--config CONFIG] [--url URL] [--shared-data-path SHARED_DATA_PATH] [--grafana-dashboards GRAFANA_DASHBOARDS]
+                              [--foxglove-studio-dashboards FOXGLOVE_STUDIO_DASHBOARDS] [--loki-rule-files LOKI_RULE_FILES]
+                              [--prometheus-rule-files PROMETHEUS_RULE_FILES] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
                               {setup,update,write-uid,delete} ...
 
 positional arguments:
   {setup,update,write-uid,delete}
                         Action to perform
-    setup               Register device and add custom dashboards device
+    setup               Register device and add custom dashboards
     update              Update custom device data and dashboards
     write-uid           Write device unique ID to a file
     delete              Delete device from server
-options:
-  -h, --help            show this help message and exit
-  --shared-data-path SHARED_DATA_PATH
-                        The path to which the relevant common devices app files
-                        such as robot-unique-id are stored. (default: current_directory)
-  --config CONFIG       Config file path. (default: None)
-  --robot-unique-id ROBOT_UNIQUE_ID
-                        Robot unique ID, default set to machine ID. (default: None)
-  --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
-                        set the logging level (default: None)
 
-Args that start with '--' can also be set in a config file (specified via
---config). Config file syntax allows:
-key=value, flag=true, stuff=[a,b,c] (for details, see syntax at
-https://goo.gl/R74nmi).
-In general, command-line values override config file values which override
+optional arguments:
+  -h, --help            show this help message and exit
+  --config CONFIG       Config file path. (default: None)
+  --url URL             COS base IP/URL (default: None)
+  --shared-data-path SHARED_DATA_PATH
+                        The path to which the relevant common devices app files such as robot-unique-id are stored. (default:
+                        /home/guillaume/code/rob-cos/cos-registration-agent)
+  --grafana-dashboards GRAFANA_DASHBOARDS
+                        Path to the grafana dashboard (default: None)
+  --foxglove-studio-dashboards FOXGLOVE_STUDIO_DASHBOARDS
+                        Path to the foxglove dashboard (default: None)
+  --loki-rule-files LOKI_RULE_FILES
+                        Path to the Loki rule files (default: None)
+  --prometheus-rule-files PROMETHEUS_RULE_FILES
+                        Path to the Prometheus rule files (default: None)
+  --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        Set the logging level (default: None)
+
+Args that start with '--' can also be set in a config file (specified via --config). Config file syntax allows: key=value, flag=true,
+stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi). In general, command-line values override config file values which override
 defaults.
 ```
 
@@ -105,15 +108,22 @@ Alternatively a configuration file can be used instead of argument flags.
 With the following configuration file `config.yaml`:
 
 ```
-url: localhost
-# grafana
-grafana-service-token: glsa_12345
-grafana-dashboard: tests/dashboard.json
-shared-data-path: $SNAP_COMMON/rob-cos-shared-data setup
+url: http://cos-server/cos-robotics-model-cos-registration-server/
+uid: my-robot-uid
+grafana-dashboards: path/to_grafana_dashboards/
+foxglove-studio-dashboards: path/to_foxglove_studio_dashboards/
+loki-rule-files: path/to_loki_rule_files
+prometheus-rule-files: path/to_prometheus_rule_files
+setup
+device-grafana-dashboards: [dashboard-1, dashboard-2]
+device-foxglove-dashboards: [dashboard-3, dashboard-4]
+device-loki-alert-rules: None
+device-prometheus-alert-rules: [rule-file-1]
+
 ```
 Then we can call `cos-registration-agent` with:
 ```
-cos-registration-agent --config ./config.yaml setup
+cos-registration-agent --config ./config.yaml
 ```
 
 ## Development

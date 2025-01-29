@@ -34,17 +34,17 @@ class TestCli(unittest.TestCase):
         ]
         self.generic_args.extend(self.foxglove_dashboards_path_arg)
 
-        self.loki_rule_files_path = "loki_path"
-        self.loki_rule_files_path_arg = [
-            f"--loki-rule-files={self.loki_rule_files_path}",
+        self.loki_rules_files_path = "loki_path"
+        self.loki_rules_files_path_arg = [
+            f"--loki-rules-files={self.loki_rules_files_path}",
         ]
-        self.generic_args.extend(self.loki_rule_files_path_arg)
+        self.generic_args.extend(self.loki_rules_files_path_arg)
 
-        self.prometheus_rule_files_path = "prometheus_path"
-        self.prometheus_rule_files_path_arg = [
-            f"--prometheus-rule-files={self.prometheus_rule_files_path}",
+        self.prometheus_rules_files_path = "prometheus_path"
+        self.prometheus_rules_files_path_arg = [
+            f"--prometheus-rules-files={self.prometheus_rules_files_path}",
         ]
-        self.generic_args.extend(self.prometheus_rule_files_path_arg)
+        self.generic_args.extend(self.prometheus_rules_files_path_arg)
 
     def tearDown(self):
         sys.argv = self.old_argv
@@ -75,15 +75,15 @@ class TestCli(unittest.TestCase):
 
         mock_cos_registration_agent.patch_dashboards.assert_called()
 
-        mock_cos_registration_agent.patch_rule_files.assert_called()
+        mock_cos_registration_agent.patch_rules_files.assert_called()
 
         mock_cos_registration_agent.register_device.assert_called_once_with(
             address=self.robot_ip,
             public_ssh_key=ANY,
             grafana_dashboards=[],
             foxglove_dashboards=[],
-            loki_rule_files=[],
-            prometheus_rule_files=[],
+            loki_rules_files=[],
+            prometheus_rules_files=[],
         )
 
     @patch("cos_registration_agent.cli.CosRegistrationAgent")

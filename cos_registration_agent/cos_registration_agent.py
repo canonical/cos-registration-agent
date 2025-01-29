@@ -243,7 +243,9 @@ class CosRegistrationAgent:
                 Status code: {response.status_code}"
             )
 
-    def patch_rule_files(self, rule_file_path: Path, application: str) -> None:
+    def patch_rules_files(
+        self, rules_files_path: Path, application: str
+    ) -> None:
         """Add or patch rule files on the COS registration server.
 
         Args:
@@ -252,7 +254,7 @@ class CosRegistrationAgent:
         the rule files already uploaded patch them.
         - application(str): the name of the application.
         """
-        directory = Path(rule_file_path)
+        directory = Path(rules_files_path)
         for rule_file in directory.iterdir():
             if rule_file.suffix == ".rules" and rule_file.is_file():
                 with open(rule_file, "r") as f:

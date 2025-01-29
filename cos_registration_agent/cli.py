@@ -160,14 +160,14 @@ def _parse_args() -> ArgumentParser.parse_args:
     )
 
     parser.add_argument(
-        "--loki-rule-files",
-        help="Path to the Loki rule files",
+        "--loki-rules-files",
+        help="Path to the Loki rules files",
         type=Path,
     )
 
     parser.add_argument(
-        "--prometheus-rule-files",
-        help="Path to the Prometheus rule files",
+        "--prometheus-rules-files",
+        help="Path to the Prometheus rules files",
         type=Path,
     )
 
@@ -228,14 +228,14 @@ def main():
                     dashboard_path=args.foxglove_studio_dashboards,
                     application="foxglove",
                 )
-            if args.loki_rule_files:
-                cos_registration_agent.patch_rule_files(
-                    rule_file_path=args.loki_rule_files,
+            if args.loki_rules_files:
+                cos_registration_agent.patch_rules_files(
+                    rule_file_path=args.loki_rules_files,
                     application="loki",
                 )
-            if args.prometheus_rule_files:
-                cos_registration_agent.patch_rule_files(
-                    rule_file_path=args.prometheus_rule_files,
+            if args.prometheus_rules_files:
+                cos_registration_agent.patch_rules_files(
+                    rule_file_path=args.prometheus_rules_files,
                     application="prometheus",
                 )
             try:
@@ -244,8 +244,8 @@ def main():
                     public_ssh_key=public_ssh_key,
                     grafana_dashboards=args.device_grafana_dashboards,
                     foxglove_dashboards=args.device_foxglove_dashboards,
-                    loki_rule_files=args.device_loki_alert_rules,
-                    prometheus_rule_files=args.device_prometheus_alert_rules,
+                    loki_rules_files=args.device_loki_alert_rules,
+                    prometheus_rules_files=args.device_prometheus_alert_rules,
                 )
             except SystemError as e:
                 logger.error(f"Could not create device:{e}")
@@ -271,11 +271,11 @@ def main():
                     args.device_foxglove_dashboards
                 )
             if args.device_loki_alert_rules:
-                data_to_update["loki_rule_files"] = (
+                data_to_update["loki_rules_files"] = (
                     args.device_loki_alert_rules
                 )
             if args.device_prometheus_alert_rules:
-                data_to_update["prometheus_rule_files"] = (
+                data_to_update["prometheus_rules_files"] = (
                     args.device_prometheus_alert_rules
                 )
             if args.grafana_dashboards:
@@ -288,14 +288,14 @@ def main():
                     dashboard_path=args.foxglove_studio_dashboards,
                     application="foxglove",
                 )
-            if args.loki_rule_files:
-                cos_registration_agent.patch_rule_files(
-                    rule_file_path=args.loki_rule_files,
+            if args.loki_rules_files:
+                cos_registration_agent.patch_rules_files(
+                    rule_file_path=args.loki_rules_files,
                     application="loki",
                 )
-            if args.prometheus_rule_files:
-                cos_registration_agent.patch_rule_files(
-                    rule_file_path=args.prometheus_rule_files,
+            if args.prometheus_rules_files:
+                cos_registration_agent.patch_rules_files(
+                    rule_file_path=args.prometheus_rules_files,
                     application="prometheus",
                 )
             cos_registration_agent.patch_device(data_to_update)

@@ -44,8 +44,8 @@ sudo snap install cos-registration-agent*.snap --dangerous
 
 ```
 usage: cos-registration-agent [-h] [--config CONFIG] [--url URL] [--shared-data-path SHARED_DATA_PATH] [--grafana-dashboards GRAFANA_DASHBOARDS]
-                              [--foxglove-studio-dashboards FOXGLOVE_STUDIO_DASHBOARDS] [--loki-rule-files LOKI_RULE_FILES]
-                              [--prometheus-rule-files PROMETHEUS_RULE_FILES] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+                              [--foxglove-studio-dashboards FOXGLOVE_STUDIO_DASHBOARDS] [--loki-rules-files LOKI_RULES_FILES]
+                              [--prometheus-rules-files PROMETHEUS_RULES_FILES] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
                               {setup,update,write-uid,delete} ...
 
 positional arguments:
@@ -67,9 +67,9 @@ optional arguments:
                         Path to the grafana dashboard (default: None)
   --foxglove-studio-dashboards FOXGLOVE_STUDIO_DASHBOARDS
                         Path to the foxglove dashboard (default: None)
-  --loki-rule-files LOKI_RULE_FILES
+  --loki-rules-files LOKI_RULES_FILES
                         Path to the Loki rule files (default: None)
-  --prometheus-rule-files PROMETHEUS_RULE_FILES
+  --prometheus-rules-files PROMETHEUS_RULES_FILES
                         Path to the Prometheus rule files (default: None)
   --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         Set the logging level (default: None)
@@ -112,8 +112,8 @@ url: http://cos-server/cos-robotics-model-cos-registration-server/
 uid: my-robot-uid
 grafana-dashboards: path/to_grafana_dashboards/
 foxglove-studio-dashboards: path/to_foxglove_studio_dashboards/
-loki-rule-files: path/to_loki_rule_files
-prometheus-rule-files: path/to_prometheus_rule_files
+loki-rules-files: path/to_loki_rules_files
+prometheus-rules-files: path/to_prometheus_rules_files
 setup
 device-grafana-dashboards: [dashboard-1, dashboard-2]
 device-foxglove-dashboards: [dashboard-3, dashboard-4]

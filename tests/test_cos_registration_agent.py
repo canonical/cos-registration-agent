@@ -56,8 +56,8 @@ class TestCosRegistrationAgent(unittest.TestCase):
         device_public_ssh_key = "my public key"
         device_grafana_dashboards = ["g_dashboard1", "g_dashboard2"]
         device_foxglove_dashboards = ["f_dashboard1", "f_dashboard2"]
-        device_loki_rule_files = ["l_alert_file_1"]
-        device_prometheus_rule_files = ["p_alert_file_1"]
+        device_loki_rules_files = ["l_alert_file_1"]
+        device_prometheus_rules_files = ["p_alert_file_1"]
 
         agent = CosRegistrationAgent(self.server_url, self.device_uid)
 
@@ -73,10 +73,11 @@ class TestCosRegistrationAgent(unittest.TestCase):
                 payload["foxglove_dashboards"], device_foxglove_dashboards
             )
             self.assertEqual(
-                payload["loki_rule_files"], device_loki_rule_files
+                payload["loki_rules_files"], device_loki_rules_files
             )
             self.assertEqual(
-                payload["prometheus_rule_files"], device_prometheus_rule_files
+                payload["prometheus_rules_files"],
+                device_prometheus_rules_files,
             )
 
             headers = {"content-type": "application/json"}
@@ -94,8 +95,8 @@ class TestCosRegistrationAgent(unittest.TestCase):
             public_ssh_key=device_public_ssh_key,
             grafana_dashboards=device_grafana_dashboards,
             foxglove_dashboards=device_foxglove_dashboards,
-            loki_rule_files=device_loki_rule_files,
-            prometheus_rule_files=device_prometheus_rule_files,
+            loki_rules_files=device_loki_rules_files,
+            prometheus_rules_files=device_prometheus_rules_files,
         )
 
     def test_fail_register_device(self):
@@ -364,7 +365,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
                     content_type="application/json",
                 )
 
-                agent.patch_rule_files("path_to_my_rule_file", "loki")
+                agent.patch_rules_files("path_to_my_rule_file", "loki")
 
     @patch(
         "builtins.open",
@@ -418,7 +419,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
                     content_type="application/json",
                 )
 
-                agent.patch_rule_files("path_to_my_rule_file", "loki")
+                agent.patch_rules_files("path_to_my_rule_file", "loki")
 
                 self.r_mock.get(
                     self.server_url
@@ -460,4 +461,4 @@ class TestCosRegistrationAgent(unittest.TestCase):
                 )
 
                 yaml_safe_load_mock.return_value = loki_rule_file
-                agent.patch_rule_files("path_to_my_rule_file", "loki")
+                agent.patch_rules_files("path_to_my_rule_file", "loki")

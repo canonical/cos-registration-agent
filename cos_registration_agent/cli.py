@@ -230,12 +230,12 @@ def main():
                 )
             if args.loki_rules_files:
                 cos_registration_agent.patch_rules_files(
-                    rule_file_path=args.loki_rules_files,
+                    rules_files_path=args.loki_rules_files,
                     application="loki",
                 )
             if args.prometheus_rules_files:
                 cos_registration_agent.patch_rules_files(
-                    rule_file_path=args.prometheus_rules_files,
+                    rules_files_path=args.prometheus_rules_files,
                     application="prometheus",
                 )
             try:
@@ -290,12 +290,12 @@ def main():
                 )
             if args.loki_rules_files:
                 cos_registration_agent.patch_rules_files(
-                    rule_file_path=args.loki_rules_files,
+                    rules_files_path=args.loki_rules_files,
                     application="loki",
                 )
             if args.prometheus_rules_files:
                 cos_registration_agent.patch_rules_files(
-                    rule_file_path=args.prometheus_rules_files,
+                    rules_files_path=args.prometheus_rules_files,
                     application="prometheus",
                 )
             cos_registration_agent.patch_device(data_to_update)

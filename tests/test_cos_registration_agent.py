@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 from pathlib import Path
 import responses
 import json
+import yaml
 
 
 from cos_registration_agent.cos_registration_agent import (
@@ -327,10 +328,13 @@ class TestCosRegistrationAgent(unittest.TestCase):
         groups:
           - name: my_rule
         """
+        loki_rule_file_dict = yaml.safe_load(loki_rule_file)
+        # put the content in the yaml dump format
+        loki_rule_file = yaml.dump(loki_rule_file_dict)
 
         agent = CosRegistrationAgent(self.server_url, self.device_uid)
 
-        with patch("yaml.safe_load", return_value=loki_rule_file):
+        with patch("yaml.safe_load", return_value=loki_rule_file_dict):
             with patch(
                 "pathlib.Path.iterdir",
                 return_value=[Path(loki_rule_file_name + ".rules")],
@@ -379,11 +383,14 @@ class TestCosRegistrationAgent(unittest.TestCase):
         groups:
           - name: my_rule
         """
+        loki_rule_file_dict = yaml.safe_load(loki_rule_file)
+        # put the content in the yaml dump format
+        loki_rule_file = yaml.dump(loki_rule_file_dict)
 
         agent = CosRegistrationAgent(self.server_url, self.device_uid)
 
         with patch(
-            "yaml.safe_load", return_value=loki_rule_file
+            "yaml.safe_load", return_value=loki_rule_file_dict
         ) as yaml_safe_load_mock:
             with patch(
                 "pathlib.Path.iterdir",

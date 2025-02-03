@@ -285,7 +285,7 @@ class CosRegistrationAgent:
             rule_file_name = Path(rule_file).stem
             rule_json = {
                 "uid": rule_file_name,
-                "rules": rule_file_content_yaml,
+                "rules": yaml.dump(rule_file_content_yaml),
             }
             response = requests.post(
                 application_url,

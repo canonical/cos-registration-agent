@@ -244,8 +244,8 @@ def main():
                     public_ssh_key=public_ssh_key,
                     grafana_dashboards=args.device_grafana_dashboards,
                     foxglove_dashboards=args.device_foxglove_dashboards,
-                    loki_rules_files=args.device_loki_alert_rules,
-                    prometheus_rules_files=args.device_prometheus_alert_rules,
+                    loki_alert_rule_files=args.device_loki_alert_rules,
+                    prometheus_alert_rule_files=args.device_prometheus_alert_rules,
                 )
             except SystemError as e:
                 logger.error(f"Could not create device:{e}")
@@ -271,11 +271,11 @@ def main():
                     args.device_foxglove_dashboards
                 )
             if args.device_loki_alert_rules:
-                data_to_update["loki_rules_files"] = (
+                data_to_update["loki_alert_rule_files"] = (
                     args.device_loki_alert_rules
                 )
             if args.device_prometheus_alert_rules:
-                data_to_update["prometheus_rules_files"] = (
+                data_to_update["prometheus_alert_rule_files"] = (
                     args.device_prometheus_alert_rules
                 )
             if args.grafana_dashboards:

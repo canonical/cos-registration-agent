@@ -82,8 +82,8 @@ class TestCli(unittest.TestCase):
             public_ssh_key=ANY,
             grafana_dashboards=[],
             foxglove_dashboards=[],
-            loki_rules_files=[],
-            prometheus_rules_files=[],
+            loki_alert_rule_files=[],
+            prometheus_alert_rule_files=[],
         )
 
     @patch("cos_registration_agent.cli.CosRegistrationAgent")

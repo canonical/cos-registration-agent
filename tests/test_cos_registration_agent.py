@@ -447,6 +447,9 @@ class TestCosRegistrationAgent(unittest.TestCase):
                 groups:
                   - name: new_my_rule
                 """
+                loki_rule_file_dict = yaml.safe_load(loki_rule_file)
+                # put the content in the yaml dump format
+                loki_rule_file = yaml.dump(loki_rule_file_dict)
 
                 def patch_callback(request):
                     payload = json.loads(request.body)
@@ -467,5 +470,5 @@ class TestCosRegistrationAgent(unittest.TestCase):
                     content_type="application/json",
                 )
 
-                yaml_safe_load_mock.return_value = loki_rule_file
+                yaml_safe_load_mock.return_value = loki_rule_file_dict
                 agent.patch_rules_files("path_to_my_rule_file", "loki")

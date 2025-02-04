@@ -273,7 +273,7 @@ class CosRegistrationAgent:
                         if current_rule_file_data != updated_data:
                             self._patch_rule_file(
                                 rule_file_id_url,
-                                updated_rule_file_data,
+                                updated_data,
                             )
 
     def _add_rule_file(self, rule_file: Path, application: str):
@@ -302,10 +302,10 @@ class CosRegistrationAgent:
             logger.info("Rule file added")
 
     def _patch_rule_file(
-        self, rule_file_id_url: str, updated_rule_file_data: dict
+        self, rule_file_id_url: str, updated_data: str
     ) -> None:
         rule_json = {
-            "rules": updated_rule_file_data,
+            "rules": updated_data,
         }
         response = requests.patch(rule_file_id_url, json=rule_json)
         if response.status_code != 200:

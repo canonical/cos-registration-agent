@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import ANY, patch, MagicMock
 import sys
 import configargparse
-from pathlib import Path
 
 from cos_registration_agent import cli
 
@@ -34,17 +33,17 @@ class TestCli(unittest.TestCase):
         ]
         self.generic_args.extend(self.foxglove_dashboards_path_arg)
 
-        self.loki_rules_files_path = "loki_path"
-        self.loki_rules_files_path_arg = [
-            f"--loki-rules-files={self.loki_rules_files_path}",
+        self.loki_alert_rule_files_path = "loki_path"
+        self.loki_alert_rule_files_path_arg = [
+            f"--loki-alert-rule-files={self.loki_alert_rule_files_path}",
         ]
-        self.generic_args.extend(self.loki_rules_files_path_arg)
+        self.generic_args.extend(self.loki_alert_rule_files_path_arg)
 
-        self.prometheus_rules_files_path = "prometheus_path"
-        self.prometheus_rules_files_path_arg = [
-            f"--prometheus-rules-files={self.prometheus_rules_files_path}",
+        self.prometheus_alert_rule_files_path = "prometheus_path"
+        self.prometheus_alert_rule_files_path_arg = [
+            f"--prometheus-alert-rule-files={self.prometheus_alert_rule_files_path}",
         ]
-        self.generic_args.extend(self.prometheus_rules_files_path_arg)
+        self.generic_args.extend(self.prometheus_alert_rule_files_path_arg)
 
     def tearDown(self):
         sys.argv = self.old_argv
@@ -75,7 +74,7 @@ class TestCli(unittest.TestCase):
 
         mock_cos_registration_agent.patch_dashboards.assert_called()
 
-        mock_cos_registration_agent.patch_rules_files.assert_called()
+        mock_cos_registration_agent.patch_rule_files.assert_called()
 
         mock_cos_registration_agent.register_device.assert_called_once_with(
             address=self.robot_ip,

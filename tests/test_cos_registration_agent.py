@@ -369,7 +369,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
                     content_type="application/json",
                 )
 
-                agent.patch_rules_files("path_to_my_rule_file", "loki")
+                agent.patch_rule_files("path_to_my_rule_file", "loki")
 
     @patch(
         "builtins.open",
@@ -426,7 +426,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
                     content_type="application/json",
                 )
 
-                agent.patch_rules_files("path_to_my_rule_file", "loki")
+                agent.patch_rule_files("path_to_my_rule_file", "loki")
 
                 self.r_mock.get(
                     self.server_url
@@ -471,4 +471,4 @@ class TestCosRegistrationAgent(unittest.TestCase):
                 )
 
                 yaml_safe_load_mock.return_value = loki_rule_file_dict
-                agent.patch_rules_files("path_to_my_rule_file", "loki")
+                agent.patch_rule_files("path_to_my_rule_file", "loki")

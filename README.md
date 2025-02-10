@@ -44,8 +44,8 @@ sudo snap install cos-registration-agent*.snap --dangerous
 
 ```
 usage: cos-registration-agent [-h] [--config CONFIG] [--url URL] [--shared-data-path SHARED_DATA_PATH] [--grafana-dashboards GRAFANA_DASHBOARDS]
-                              [--foxglove-studio-dashboards FOXGLOVE_STUDIO_DASHBOARDS] [--loki-rules-files LOKI_RULES_FILES]
-                              [--prometheus-rules-files PROMETHEUS_RULES_FILES] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
+                              [--foxglove-studio-dashboards FOXGLOVE_STUDIO_DASHBOARDS] [--loki-alert-rule-files LOKI_ALERT_RULE_FILES]
+                              [--prometheus-alert-rule-files PROMETHEUS_ALERT_RULE_FILES] [--log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}]
                               {setup,update,write-uid,delete} ...
 
 positional arguments:
@@ -67,10 +67,10 @@ optional arguments:
                         Path to the grafana dashboard (default: None)
   --foxglove-studio-dashboards FOXGLOVE_STUDIO_DASHBOARDS
                         Path to the foxglove dashboard (default: None)
-  --loki-rules-files LOKI_RULES_FILES
-                        Path to the Loki rule files (default: None)
-  --prometheus-rules-files PROMETHEUS_RULES_FILES
-                        Path to the Prometheus rule files (default: None)
+  --loki-alert-rule-files LOKI_ALERT_RULE_FILES
+                        Path to the Loki alert rule files (default: None)
+  --prometheus-alert-rule-files PROMETHEUS_ALERT_RULE_FILES
+                        Path to the Prometheus alert rule files (default: None)
   --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         Set the logging level (default: None)
 
@@ -112,13 +112,13 @@ url: http://cos-server/cos-robotics-model-cos-registration-server/
 uid: my-robot-uid
 grafana-dashboards: path/to_grafana_dashboards/
 foxglove-studio-dashboards: path/to_foxglove_studio_dashboards/
-loki-rules-files: path/to_loki_rules_files
-prometheus-rules-files: path/to_prometheus_rules_files
+loki-alert-rule-files: path/to_loki_alert_rule_files
+prometheus-alert-rule-files: path/to_prometheus_alert_rule_files
 setup
 device-grafana-dashboards: [dashboard-1, dashboard-2]
 device-foxglove-dashboards: [dashboard-3, dashboard-4]
-device-loki-alert-rules: None
-device-prometheus-alert-rules: [rule-file-1]
+device-loki-alert-rule-files: None
+device-prometheus-alert-rule-files: [alert-rule-file-1]
 
 ```
 Then we can call `cos-registration-agent` with:

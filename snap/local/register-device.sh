@@ -20,10 +20,7 @@ if [ -d "${SNAP_COMMON}/configuration/foxglove_layouts" ]; then
     REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --foxglove-studio-dashboards ${SNAP_COMMON}/configuration/foxglove_layouts"
 fi
 
-# Build the registration command with the args
-REGISTRATION_CMD="${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data"
-REGISTRATION_CMD="${REGISTRATION_CMD} ${REGISTRATION_CMD_ARGS} setup -c ${CONFIGURATION_FILE_PATH}"
-
-eval "${REGISTRATION_CMD}"
+# Call the registration command with the args
+${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} setup -c ${CONFIGURATION_FILE_PATH}
 
 snapctl start --enable ${SNAP_NAME}.update-device-configuration 2>&1

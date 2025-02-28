@@ -74,7 +74,7 @@ optional arguments:
   --log-level {DEBUG,INFO,WARNING,ERROR,CRITICAL}
                         Set the logging level (default: None)
 
-Args that start with '--' can also be set in a config file (specified via --config). Config file syntax allows: key=value, flag=true,
+Positional arguments as well as args that start with '--' can also be set in a config file (specified via --config). Config file syntax allows: key=value, flag=true,
 stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi). In general, command-line values override config file values which override
 defaults.
 ```

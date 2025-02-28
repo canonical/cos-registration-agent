@@ -2,6 +2,9 @@
 
 CONFIGURATION_FILE_PATH="$SNAP_COMMON/configuration/device.yaml"
 
+# Set the registration command args based on configuration
+REGISTRATION_CMD_ARGS=""
+
 # Check if grafan_dashboards directory exists in configuration
 if [ -d "${SNAP_COMMON}/configuration/grafana_dashboards" ]; then
     REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --grafana-dashboards ${SNAP_COMMON}/configuration/grafana_dashboards"

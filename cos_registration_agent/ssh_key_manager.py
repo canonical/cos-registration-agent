@@ -55,6 +55,6 @@ class SSHKeysManager:
             os.makedirs(folder, exist_ok=True)
             write_data(private_ssh_key, "device_rsa_key", folder)
             write_data(public_ssh_key, "device_rsa_key.pub", folder)
-        except Exception as e:
+        except OSError as e:
             logger.error(f"Error setting up SSH keys: {e}")
             raise e

@@ -7,6 +7,7 @@ from typing import Set, Union
 from urllib.parse import urljoin
 
 import requests
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,8 @@ class CosRegistrationAgent:
         device_data = {}
         for field, value in fields.items():
             device_data[field] = value
+
+        device_data["uid"] = self.device_id
 
         json_data = json.dumps(device_data)
         response = requests.post(
@@ -127,7 +130,7 @@ class CosRegistrationAgent:
         """
         response = requests.get(dashboard_id_url)
         if response.status_code == 200:
-            return response.json()
+            return response.text
         elif response.status_code == 404:
             logger.warning(
                 f"Could not find dashboard data at {dashboard_id_url}."
@@ -141,7 +144,7 @@ class CosRegistrationAgent:
             )
 
     def patch_dashboards(self, dashboard_path: Path, application: str) -> None:
-        """Add or patch dashboard on the COS registration server.
+        """Add or patch dashboards on the COS registration server.
 
         Args:
         - dashboard_path(str): the path in which the dashboards are stored.
@@ -164,7 +167,8 @@ class CosRegistrationAgent:
                     if current_dashboard_data is None:
                         self._add_dashboard(dashboard_file, application)
                     else:
-                        if current_dashboard_data != updated_dashboard_data:
+                        updated_dashboard = json.dumps(updated_dashboard_data)
+                        if current_dashboard_data != updated_dashboard:
                             self._patch_dashboard(
                                 dashboard_id_url,
                                 updated_dashboard_data,
@@ -216,3 +220,104 @@ class CosRegistrationAgent:
             application + "/dashboards/" + dashboard_id + "/",
         )
         return dashbard_id_url
+
+    def _get_rule_file_data(self, rule_file_id_url: str):
+        """Retrieve rule file data from the COS registration server.
+
+        Args:
+        - rule_file_id_url(str): the url to get the rule file data from.
+        """
+        response = requests.get(rule_file_id_url)
+        if response.status_code == 200:
+            json_data = response.json()
+            return yaml.load(json_data["rules"], yaml.SafeLoader)
+        elif response.status_code == 404:
+            logger.warning(
+                f"Could not find rule file data at {rule_file_id_url}."
+                "Uploading it."
+            )
+            return None
+        else:
+            raise FileNotFoundError(
+                f"Failed to retrieve rule file data. \
+                Status code: {response.status_code}"
+            )
+
+    def patch_rule_files(
+        self, rule_files_path: Path, application: str
+    ) -> None:
+        """Add or patch rule files on the COS registration server.
+
+        Args:
+        - rule_file_path(str): the path in which the rule files are stored.
+        If there are new rule files upload them, if there are changes in
+        the rule files already uploaded patch them.
+        - application(str): the name of the application.
+        """
+        directory = Path(rule_files_path)
+        for rule_file in directory.iterdir():
+            if rule_file.suffix == ".rules" and rule_file.is_file():
+                with open(rule_file, "r") as f:
+                    updated_rule_file_data = yaml.safe_load(f)
+                    rule_file_id = rule_file.stem
+                    rule_file_id_url = self._get_rule_file_id_url(
+                        rule_file_id, application
+                    )
+                    current_rule_file_data = self._get_rule_file_data(
+                        rule_file_id_url
+                    )
+                    if current_rule_file_data is None:
+                        self._add_rule_file(rule_file, application)
+                    else:
+                        updated_data = yaml.dump(updated_rule_file_data)
+                        if current_rule_file_data != updated_data:
+                            self._patch_rule_file(
+                                rule_file_id_url,
+                                updated_data,
+                            )
+
+    def _add_rule_file(self, rule_file: Path, application: str):
+        application_url = urljoin(
+            self.cos_applications_url, application + "/alert_rules/"
+        )
+        with open(rule_file) as rule_file_data:
+            rule_file_content_yaml = yaml.safe_load(rule_file_data)
+            rule_file_name = Path(rule_file).stem
+            rule_json = {
+                "uid": rule_file_name,
+                "rules": yaml.dump(rule_file_content_yaml),
+            }
+            response = requests.post(
+                application_url,
+                json=rule_json,
+                headers=HEADERS,
+            )
+            if response.status_code != 201:
+                logger.error(
+                    f"Could not add the rule file, \
+                    response status code is {response.status_code}: \
+                    {response.json()}"
+                )
+
+            logger.info("Rule file added")
+
+    def _patch_rule_file(
+        self, rule_file_id_url: str, updated_data: str
+    ) -> None:
+        rule_json = {
+            "rules": updated_data,
+        }
+        response = requests.patch(rule_file_id_url, json=rule_json)
+        if response.status_code != 200:
+            error_details = response.json()
+            logger.error(
+                f"Failed to patch rule file. \
+                Error: {error_details}"
+            )
+
+    def _get_rule_file_id_url(self, rule_file_id, application) -> str:
+        rule_file_id_url = urljoin(
+            self.cos_applications_url,
+            application + "/alert_rules/" + rule_file_id + "/",
+        )
+        return rule_file_id_url

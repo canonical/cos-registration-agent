@@ -198,7 +198,7 @@ def main():
 
         elif args.action == "update":
             data_to_update = {}
-            data_to_update["address"] = get_machine_ip_address()
+            data_to_update["address"] = get_machine_ip_address(args.url)
             if args.update_ssh_keys:
                 public_ssh_key = ssh_key_manager.setup(
                     folder=args.shared_data_path

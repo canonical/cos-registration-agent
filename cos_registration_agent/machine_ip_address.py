@@ -2,17 +2,23 @@
 
 import logging
 import urllib.parse
-
+import socket
 from pyroute2 import IPRoute
 
 logger = logging.getLogger(__name__)
-
 
 def get_machine_ip_address(url: str) -> str:
     """Get the machine ip address."""
     try:
         parsed_url = urllib.parse.urlparse(url)
         host = parsed_url.hostname
+
+        # Resolve hostname to IP address if needed
+        try:
+            host = socket.gethostbyname(host)
+        except socket.gaierror as e:
+            logger.error(f"Failed to resolve hostname {host}: {e}")
+            raise
 
         with IPRoute() as ipr:
             route_info = ipr.route("get", dst=host)

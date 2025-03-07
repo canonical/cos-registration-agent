@@ -7,6 +7,7 @@ from pyroute2 import IPRoute
 
 logger = logging.getLogger(__name__)
 
+
 def get_machine_ip_address(url: str) -> str:
     """Get the machine ip address."""
     try:

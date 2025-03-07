@@ -2,10 +2,13 @@ import unittest
 from unittest.mock import patch, MagicMock
 from cos_registration_agent.machine_ip_address import get_machine_ip_address
 
+
 class TestGetMachineIPAddress(unittest.TestCase):
     @patch("cos_registration_agent.machine_ip_address.socket.gethostbyname")
     @patch("cos_registration_agent.machine_ip_address.IPRoute")
-    def test_get_machine_ip_address(self, mock_iproute, mock_gethostbyname):
+    def test_get_machine_ip_address_dns(
+        self, mock_iproute, mock_gethostbyname
+    ):
         test_url = "http://test.com"
         mock_gethostbyname.return_value = "1.2.3.4"
 
@@ -24,7 +27,9 @@ class TestGetMachineIPAddress(unittest.TestCase):
 
     @patch("cos_registration_agent.machine_ip_address.socket.gethostbyname")
     @patch("cos_registration_agent.machine_ip_address.IPRoute")
-    def test_get_machine_ip_address_with_ip_url(self, mock_iproute, mock_gethostbyname):
+    def test_get_machine_ip_address_with_ip(
+        self, mock_iproute, mock_gethostbyname
+    ):
         test_url = "http://1.2.3.4/test"
         mock_gethostbyname.return_value = "1.2.3.4"
 
@@ -40,6 +45,7 @@ class TestGetMachineIPAddress(unittest.TestCase):
 
         mock_gethostbyname.assert_called_once_with("1.2.3.4")
         mock_ipr_instance.route.assert_called_once_with("get", dst="1.2.3.4")
+
 
 if __name__ == "__main__":
     unittest.main()

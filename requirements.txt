@@ -3,4 +3,3 @@ grafana_client
 cryptography
 requests
 pyroute2
-socket

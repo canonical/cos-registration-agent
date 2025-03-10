@@ -1,6 +1,13 @@
 black
 coverage
 flake8
+flake8-blind-except
+flake8-builtins
+flake8-class-newline
+flake8-comprehensions
+flake8-deprecated
+flake8-docstrings
+flake8-quotes
 gitchangelog
 isort
 mock
@@ -8,3 +15,5 @@ mypy
 pytest
 pytest-cov
 types-requests
+types-pyyaml
+responses

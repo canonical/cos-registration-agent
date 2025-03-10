@@ -34,6 +34,6 @@ def get_machine_ip_address(url: str) -> str:
             if attr[0] == "RTA_PREFSRC":
                 ip_address = attr[1]
         return ip_address
-    except Exception as e:
+    except ConnectionError as e:
         logger.error("Failed to get machine id address:", e)
         raise e

@@ -14,6 +14,9 @@ def get_machine_ip_address(url: str) -> str:
         parsed_url = urllib.parse.urlparse(url)
         host = parsed_url.hostname
 
+        if host is None:
+            raise ValueError(f"Invalid URL, no hostname found: {url}")
+
         # Resolve hostname to IP address if needed
         try:
             host = socket.gethostbyname(host)
@@ -33,6 +36,8 @@ def get_machine_ip_address(url: str) -> str:
         for attr in route_info[0]["attrs"]:
             if attr[0] == "RTA_PREFSRC":
                 ip_address = attr[1]
+                break
+
         return ip_address
     except ConnectionError as e:
         logger.error("Failed to get machine id address:", e)

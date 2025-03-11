@@ -9,7 +9,20 @@ logger = logging.getLogger(__name__)
 
 
 def get_machine_ip_address(url: str) -> str:
-    """Get the machine ip address."""
+    """Get the machine ip address.
+
+    Args:
+        url (str): The URL to resolve.
+
+    Returns:
+        str: The machine's source IP address used to reach the provided url.
+
+    Raises:
+        ValueError: when the URL does not have a hostname.
+        ConnectionError: If the hostname cannot be resolved
+          or the route can't be determined.
+    """
+
     try:
         parsed_url = urllib.parse.urlparse(url)
         host = parsed_url.hostname
@@ -22,7 +35,7 @@ def get_machine_ip_address(url: str) -> str:
             host = socket.gethostbyname(host)
         except socket.gaierror as e:
             logger.error(f"Failed to resolve hostname {host}: {e}")
-            raise
+            raise ConnectionError(f"Failed to resolve hostname {host}") from e
 
         with IPRoute() as ipr:
             route_info = ipr.route("get", dst=host)

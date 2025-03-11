@@ -22,7 +22,6 @@ def get_machine_ip_address(url: str) -> str:
         ConnectionError: If the hostname cannot be resolved
           or the route can't be determined.
     """
-
     try:
         parsed_url = urllib.parse.urlparse(url)
         host = parsed_url.hostname

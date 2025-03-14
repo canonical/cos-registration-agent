@@ -2,10 +2,16 @@
 
 CONFIGURATION_FILE_PATH=${SNAP_COMMON}/configuration/device.yaml
 
+if [ -n "$1" ]; then
+    CONFIGURATION_FILE_PATH="$1"
+fi
+
 if [ ! -f "${CONFIGURATION_FILE_PATH}" ]; then
     echo "Configuration file '${CONFIGURATION_FILE_PATH}' does not exist."
     exit 1
 fi
+
+echo "Using configuration file: $CONFIGURATION_FILE_PATH"
 
 # Set the registration command args based on configuration
 REGISTRATION_CMD_ARGS=""
@@ -34,4 +40,3 @@ fi
 ${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} setup -c ${CONFIGURATION_FILE_PATH}
 
 snapctl start --enable ${SNAP_NAME}.update-device-configuration 2>&1
-

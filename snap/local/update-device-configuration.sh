@@ -2,6 +2,20 @@
 
 CONFIGURATION_FILE_PATH="$SNAP_COMMON/configuration/device.yaml"
 
+CONFIG_PATH_PARAMETER="$(snapctl get configuration-path)"
+
+# use fallback configuration mechanism if the configuration-path is set
+if [ -n "${CONFIG_PATH_PARAMETER}" ]; then
+    CONFIGURATION_FILE_PATH=${CONFIG_PATH_PARAMETER}/device.yaml
+fi
+
+if [ ! -f "${CONFIGURATION_FILE_PATH}" ]; then
+    >&2 echo "Configuration file '${CONFIGURATION_FILE_PATH}' does not exist."
+    exit 1
+fi
+
+>&2 echo "Using configuration file: $CONFIGURATION_FILE_PATH"
+
 # Set the registration command args based on configuration
 REGISTRATION_CMD_ARGS=""
 
@@ -26,4 +40,6 @@ if [ -d "${SNAP_COMMON}/configuration/prometheus_alert_rules" ]; then
 fi
 
 # Call the update command with the args
-${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} update -c ${CONFIGURATION_FILE_PATH}
+>&2 echo "update device with $CONFIGURATION_FILE_PATH"
+logger -t ${SNAP_NAME} "update device with $CONFIGURATION_FILE_PATH"
+#${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} update -c ${CONFIGURATION_FILE_PATH}

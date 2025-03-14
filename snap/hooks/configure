@@ -2,24 +2,26 @@
 
 CONFIG_PATH="$(snapctl get configuration-path)"
 
+# use fallback configuration mechanism if the configuration-path is set
 if [ -n "${CONFIG_PATH}" ]; then
+    # but always give precedence to the configuration-read plug
     if snapctl is-connected configuration-read; then
       logger -t ${SNAP_NAME} "Plug 'configuration-read' is connected"
       exit 0
     fi
 
     case "${CONFIG_PATH}" in
-        ./*) ;;
-        *) 
-            echo "Invalid path. The path must be relative to root (starting with './')."
+        /root*) ;;
+        *)
+            >&2 echo "Invalid path. The path must be relative to root (starting with '/root')."
+            logger -t ${SNAP_NAME} "Invalid path. The path must be relative to root (starting with '/root')."
             exit 1
             ;;
     esac
 
-    CONFIG_PATH="/root/$(realpath --relative-to=/ "${CONFIG_PATH}")"
-
     if [ ! -d "${CONFIG_PATH}" ]; then
-        echo "Error: configuration-path '${CONFIG_PATH}' does not exist."
+        >&2 echo "Error: configuration-path '${CONFIG_PATH}' does not exist."
+        logger -t ${SNAP_NAME} "Error: configuration-path '${CONFIG_PATH}' does not exist."
         exit 1
     fi
     $SNAP/usr/bin/register-device.sh "${CONFIG_PATH}/device.yaml"

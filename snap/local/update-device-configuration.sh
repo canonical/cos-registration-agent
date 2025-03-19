@@ -11,10 +11,12 @@ fi
 
 if [ ! -f "${CONFIGURATION_FILE_PATH}" ]; then
     echo "Configuration file '${CONFIGURATION_FILE_PATH}' does not exist."
+    logger -t ${SNAP_NAME} "Configuration file '${CONFIGURATION_FILE_PATH}' does not exist."
     exit 1
 fi
 
 echo "Using configuration file: ${CONFIGURATION_FILE_PATH}."
+logger -t ${SNAP_NAME} "Using configuration file: ${CONFIGURATION_FILE_PATH}."
 
 # Set the registration command args based on configuration
 REGISTRATION_CMD_ARGS=""

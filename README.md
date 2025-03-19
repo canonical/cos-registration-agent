@@ -45,15 +45,15 @@ and finally install it with:
 sudo snap install cos-registration-agent*.snap --dangerous
 ```
 
-### Store
+### Snap Store
 
-The snap can also be installed directly from the store with:
+The snap can also be installed directly from the Snap Store with:
 
 ```
 sudo snap install cos-registration-agent --edge
 ```
 
-The snap is available on the Store for both amd64 and arm64.
+The snap is available on the Snap Store for both amd64 and arm64.
 
 ## Usage
 

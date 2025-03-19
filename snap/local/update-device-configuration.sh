@@ -4,9 +4,9 @@ CONFIGURATION_FILE_PATH="$SNAP_COMMON/configuration/device.yaml"
 
 CONFIG_PATH_PARAMETER="$(snapctl get configuration-path)"
 
-# use fallback configuration mechanism if the configuration-path is set
+# Use fallback configuration mechanism if the configuration-path is set
 if [ -n "${CONFIG_PATH_PARAMETER}" ]; then
-    CONFIGURATION_FILE_PATH=${CONFIG_PATH_PARAMETER}/device.yaml
+    CONFIGURATION_FILE_PATH="/root/${CONFIG_PATH_PARAMETER}/device.yaml"
 fi
 
 if [ ! -f "${CONFIGURATION_FILE_PATH}" ]; then
@@ -14,7 +14,7 @@ if [ ! -f "${CONFIGURATION_FILE_PATH}" ]; then
     exit 1
 fi
 
-echo "Using configuration file: $CONFIGURATION_FILE_PATH"
+echo "Using configuration file: ${CONFIGURATION_FILE_PATH}."
 
 # Set the registration command args based on configuration
 REGISTRATION_CMD_ARGS=""

@@ -11,7 +11,7 @@ if [ ! -f "${CONFIGURATION_FILE_PATH}" ]; then
     exit 1
 fi
 
-echo "Using configuration file: $CONFIGURATION_FILE_PATH"
+echo "Using configuration file: ${CONFIGURATION_FILE_PATH}."
 
 # Set the registration command args based on configuration
 REGISTRATION_CMD_ARGS=""

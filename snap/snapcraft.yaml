@@ -26,6 +26,8 @@ plugs:
     target: $SNAP_COMMON/configuration
 
 hooks:
+  configure:
+    plugs: [network, home]
   connect-plug-configuration-read:
     plugs: [network]
   connect-plug-rob-cos-common-write:
@@ -48,7 +50,7 @@ apps:
     command: usr/bin/update-device-configuration.sh
     daemon: oneshot
     install-mode: disable
-    plugs: [network, rob-cos-common-write, configuration-read]
+    plugs: [network, rob-cos-common-write, configuration-read, home]
   cos-registration-agent:
     command: bin/cos-registration-agent
-    plugs: [network, rob-cos-common-write, configuration-read]
+    plugs: [network, rob-cos-common-write, configuration-read, home]

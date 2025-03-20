@@ -30,15 +30,30 @@ where it is made available for other snaps on the device.
 Delete is responsible for deleting the device from COS registration server.
 
 ## Installation
-The COS registration agent required systemd.
+The COS registration agent requires systemd.
 
-To install the `cos-registration-agent``, you must build and install the snap:
+### Local
+
+To install the `cos-registration-agent`, you can build it first with:
 ```
 snapcraft
 ```
+
+and finally install it with:
+
 ```
 sudo snap install cos-registration-agent*.snap --dangerous
 ```
+
+### Snap Store
+
+The snap can also be installed directly from the Snap Store with:
+
+```
+sudo snap install cos-registration-agent --edge
+```
+
+The snap is available on the Snap Store for both amd64 and arm64.
 
 ## Usage
 

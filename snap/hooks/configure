@@ -13,9 +13,9 @@ if [ -n "${CONFIG_PATH}" ]; then
 
     if [ ! -d "/root/${CONFIG_PATH}" ]; then
         >&2 echo "Error: configuration-path '${CONFIG_PATH}' does not exist. \
-            The path must be relative to root (starting with '/root')"
+            The path must be relative to /root."
         logger -t ${SNAP_NAME} "Error: configuration-path '${CONFIG_PATH}' does not exist. \
-            The path must be relative to root (starting with '/root')"
+            The path must be relative to /root."
         exit 1
     fi
     $SNAP/usr/bin/register-device.sh "/root/${CONFIG_PATH}/device.yaml"

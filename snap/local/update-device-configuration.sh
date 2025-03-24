@@ -33,12 +33,12 @@ fi
 
 # Check if loki_alert_rules directory exists in configuration
 if [ -d "${SNAP_COMMON}/configuration/loki_alert_rules" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --loki-rules-files ${SNAP_COMMON}/configuration/loki_alert_rules"
+    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --loki-alert-rule-files ${SNAP_COMMON}/configuration/loki_alert_rules"
 fi
 
 # Check if prometheus_alert_rules directory exists in configuration
 if [ -d "${SNAP_COMMON}/configuration/prometheus_alert_rules" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --prometheus-rules-files ${SNAP_COMMON}/configuration/prometheus_alert_rules"
+    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --prometheus-alert-rule-files ${SNAP_COMMON}/configuration/prometheus_alert_rules"
 fi
 
 # Call the update command with the args

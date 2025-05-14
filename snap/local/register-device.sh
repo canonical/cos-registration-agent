@@ -17,23 +17,23 @@ logger -t ${SNAP_NAME} "Using configuration file: ${CONFIGURATION_FILE_PATH}."
 REGISTRATION_CMD_ARGS=""
 
 # Check if grafan_dashboards directory exists in configuration
-if [ -d "${SNAP_COMMON}/configuration/grafana_dashboards" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --grafana-dashboards ${SNAP_COMMON}/configuration/grafana_dashboards"
+if [ -d "${CONFIGURATION_FILE_PATH}/grafana_dashboards" ]; then
+    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --grafana-dashboards ${CONFIGURATION_FILE_PATH}/grafana_dashboards"
 fi
 
 # Check if foxglove_layouts directory exists in configuration
-if [ -d "${SNAP_COMMON}/configuration/foxglove_layouts" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --foxglove-studio-dashboards ${SNAP_COMMON}/configuration/foxglove_layouts"
+if [ -d "${CONFIGURATION_FILE_PATH}/foxglove_layouts" ]; then
+    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --foxglove-studio-dashboards ${CONFIGURATION_FILE_PATH}/foxglove_layouts"
 fi
 
 # Check if loki_alert_rules directory exists in configuration
-if [ -d "${SNAP_COMMON}/configuration/loki_alert_rules" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --loki-alert-rule-files ${SNAP_COMMON}/configuration/loki_alert_rules"
+if [ -d "${CONFIGURATION_FILE_PATH}/loki_alert_rules" ]; then
+    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --loki-alert-rule-files ${CONFIGURATION_FILE_PATH}/loki_alert_rules"
 fi
 
 # Check if prometheus_alert_rules directory exists in configuration
-if [ -d "${SNAP_COMMON}/configuration/prometheus_alert_rules" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --prometheus-alert-rule-files ${SNAP_COMMON}/configuration/prometheus_alert_rules"
+if [ -d "${CONFIGURATION_FILE_PATH}/prometheus_alert_rules" ]; then
+    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --prometheus-alert-rule-files ${CONFIGURATION_FILE_PATH}/prometheus_alert_rules"
 fi
 
 # Call the registration command with the args

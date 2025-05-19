@@ -8,7 +8,7 @@ if [ ! -f "$CONFIGURATION_FILE_PATH" ]; then
     # Use fallback configuration mechanism if the configuration-path is set
     if [ -n "${CONFIG_PATH}" ]; then
         echo "Configuration-path parameter has been set"
-        CONFIGURATION_FILE_PATH=${CONFIG_PATH}
+        CONFIGURATION_FILE_PATH=${CONFIG_PATH}/device.yaml
     else
         echo "No valid configuration file has been found"
         exit 1

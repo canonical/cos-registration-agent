@@ -8,7 +8,7 @@ if [ ! -f "$CONFIGURATION_FILE_PATH" ]; then
     # Use fallback configuration mechanism if the configuration-path is set
     if [ -n "${CONFIG_PATH}" ]; then
         echo "Configuration-path parameter has been set"
-        CONFIGURATION_FILE_PATH=/root/${CONFIG_PATH}/device.yaml
+        CONFIGURATION_FILE_PATH="/root/${CONFIG_PATH}/device.yaml"
     else
         echo "No valid configuration file has been found"
         exit 1
@@ -16,5 +16,5 @@ if [ ! -f "$CONFIGURATION_FILE_PATH" ]; then
 fi
 
 URL=$(grep '^url:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
-UID=$(grep '^uid:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
-$SNAP/bin/cos-registration-agent delete --url $URL --uid $UID
+UUID=$(grep '^uid:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
+$SNAP/bin/cos-registration-agent delete --url $URL --uid $UUID

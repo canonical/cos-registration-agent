@@ -33,7 +33,7 @@ hooks:
   connect-plug-rob-cos-common-write:
     plugs: [network]
   remove:
-    plugs: [network, configuration-read]
+    plugs: [network, home, configuration-read]
 
 parts:
   local-files:

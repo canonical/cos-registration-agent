@@ -15,17 +15,36 @@ API_VERSION = str("api/v1/")
 HEADERS = {"Content-Type": "application/json"}
 
 
+def _validate_token(token_file: Optional[Path] = None) -> Optional[str]:
+    if token_file:
+        if not token_file.is_file():
+            error_message = f"The bearer token file path provided \
+                doesn't exist: {token_file}"
+            logger.error(error_message)
+            raise FileNotFoundError(error_message)
+
+        return token_file.read_text()
+    return None
+
+
 class CosRegistrationServerClient:
     """COS registration server HTTP client."""
 
-    def __init__(self, cos_server_url: str):
+    def __init__(
+        self, cos_server_url: str, bearer_token: Optional[str] = None
+    ):
         """Init COS Registration server client."""
         self.cos_server_url = urljoin(cos_server_url, API_VERSION)
+
+        self.headers = {}
+        if bearer_token:
+            self.headers["Authorization"] = f"bearer {bearer_token}"
 
     def get(self, endpoint: str, params: Any = None) -> Any:
         """HTTP GET to the COS Registration server."""
         response = requests.get(
             urljoin(self.cos_server_url, endpoint),
+            headers=self.headers,
             params=params,
             verify=False,
             timeout=10,
@@ -40,7 +59,7 @@ class CosRegistrationServerClient:
             urljoin(self.cos_server_url, endpoint),
             json=data,
             verify=False,
-            headers=headers,
+            headers=self.headers | headers,
             timeout=10,
         )
         return response
@@ -73,9 +92,12 @@ class CosRegistrationAgent:
         self,
         cos_server_url: str,
         device_id: str,
+        token_file: Optional[Path] = None,
     ):
         """Init COS registration agent."""
-        self.cos_client = CosRegistrationServerClient(cos_server_url)
+        self.cos_client = CosRegistrationServerClient(
+            cos_server_url, bearer_token=_validate_token(token_file)
+        )
         self.device_id = device_id
         self.devices_endpoint = "devices/"
         self.applications_endpoint = "applications/"

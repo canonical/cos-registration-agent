@@ -3,39 +3,88 @@
 import json
 import logging
 from pathlib import Path
-from typing import Set, Union
-from urllib.parse import urljoin
+from posixpath import join as urljoin
+from typing import Any, Optional, Set, Union
 
 import requests
 import yaml
 
 logger = logging.getLogger(__name__)
 
-API_VERSION = "api/v1/"
+API_VERSION = str("api/v1/")
 HEADERS = {"Content-Type": "application/json"}
+
+
+class CosRegistrationServerClient:
+    """COS registration server HTTP client."""
+
+    def __init__(self, cos_server_url: str):
+        """Init COS Registration server client."""
+        self.cos_server_url = urljoin(cos_server_url, API_VERSION)
+
+    def get(self, endpoint: str, params: Any = None) -> Any:
+        """HTTP GET to the COS Registration server."""
+        response = requests.get(
+            urljoin(self.cos_server_url, endpoint),
+            params=params,
+            verify=False,
+            timeout=10,
+        )
+        return response
+
+    def post(
+        self, endpoint: str, data: Any = None, headers: Any = None
+    ) -> Any:
+        """HTTP POST to the COS Registration server."""
+        response = requests.post(
+            urljoin(self.cos_server_url, endpoint),
+            json=data,
+            verify=False,
+            headers=headers,
+            timeout=10,
+        )
+        return response
+
+    def patch(self, endpoint: str, data: Any = None) -> Any:
+        """HTTP PATCH to the COS Registration server."""
+        response = requests.patch(
+            urljoin(self.cos_server_url, endpoint),
+            json=data,
+            verify=False,
+            timeout=10,
+        )
+        return response
+
+    def delete(self, endpoint: str, data: Any = None) -> Any:
+        """HTTP DELETE to the COS Registration server."""
+        response = requests.delete(
+            urljoin(self.cos_server_url, endpoint),
+            json=data,
+            verify=False,
+            timeout=10,
+        )
+        return response
 
 
 class CosRegistrationAgent:
     """COS registration agent interfacing with the COS backend."""
 
-    def __init__(self, cos_server_url: str, device_id: str):
+    def __init__(
+        self,
+        cos_server_url: str,
+        device_id: str,
+    ):
         """Init COS registration agent."""
-        self.cos_server_url = cos_server_url
-        self.cos_devices_url = urljoin(
-            self.cos_server_url, API_VERSION + "devices/"
-        )
-        self.cos_applications_url = urljoin(
-            self.cos_server_url, API_VERSION + "applications/"
-        )
-        self.cos_health_url = urljoin(
-            self.cos_server_url, API_VERSION + "health/"
-        )
+        self.cos_client = CosRegistrationServerClient(cos_server_url)
         self.device_id = device_id
-        self.device_id_url = urljoin(
-            self.cos_devices_url, self.device_id + "/"
+        self.devices_endpoint = "devices/"
+        self.applications_endpoint = "applications/"
+        self.health_endpoint = "health/"
+        self.device_id_endpoint = urljoin(
+            self.devices_endpoint, self.device_id + "/"
         )
 
-        server_health_status = requests.get(self.cos_health_url)
+        server_health_status = self.cos_client.get(self.health_endpoint)
         if not server_health_status.status_code == 200:
             error_message = "COS registration server health check failed, \
                     make sure the server is reachable"
@@ -55,9 +104,8 @@ class CosRegistrationAgent:
 
         device_data["uid"] = self.device_id
 
-        json_data = json.dumps(device_data)
-        response = requests.post(
-            self.cos_devices_url, data=json_data, headers=HEADERS
+        response = self.cos_client.post(
+            self.devices_endpoint, data=device_data, headers=HEADERS
         )
         if response.status_code != 201:
             logger.error(
@@ -71,7 +119,7 @@ class CosRegistrationAgent:
 
     def delete_device(self) -> None:
         """Delete device from the COS registration server."""
-        response = requests.delete(self.device_id_url)
+        response = self.cos_client.delete(self.device_id_endpoint)
         if response.status_code != 204:
             logger.error(
                 f"Could not delete device, \
@@ -82,11 +130,13 @@ class CosRegistrationAgent:
 
     def _get_device_data(self):
         """Retrieve devices data from the COS Registration server."""
-        response = requests.get(self.device_id_url)
+        response = self.cos_client.get(self.device_id_endpoint)
         if response.status_code == 200:
             return response.json()
         elif response.status_code == 404:
-            logger.error(f"Could not find device data at {self.device_id_url}")
+            logger.error(
+                f"Could not find device data at {self.device_id_endpoint}"
+            )
             return None
         else:
             raise FileNotFoundError(
@@ -105,7 +155,6 @@ class CosRegistrationAgent:
             return
 
         device_current_data = self._get_device_data()
-        device_id_url = self.device_id_url
 
         device_patched_data = {**device_current_data, **updated_device_data}
 
@@ -113,7 +162,9 @@ class CosRegistrationAgent:
             if key in device_current_data and key in updated_device_data:
                 device_patched_data[key] = value
 
-        response = requests.patch(device_id_url, json=device_patched_data)
+        response = self.cos_client.patch(
+            self.device_id_endpoint, data=device_patched_data
+        )
         if response.status_code != 200:
             error_details = response.json()
             logger.error(
@@ -122,18 +173,18 @@ class CosRegistrationAgent:
                 Status code: {response.status_code}"
             )
 
-    def _get_dashboard_data(self, dashboard_id_url: str):
+    def _get_dashboard_data(self, dashboard_id_endpoint: str):
         """Retrieve dashboard data from the COS registration server.
 
         Args:
-        - dashboard_id_url(str): the url to get the dashboard data from.
+        - dashboard_id_endpoint(str): the endpoint to get the dashboard data.
         """
-        response = requests.get(dashboard_id_url)
+        response = self.cos_client.get(dashboard_id_endpoint)
         if response.status_code == 200:
             return response.text
         elif response.status_code == 404:
             logger.warning(
-                f"Could not find dashboard data at {dashboard_id_url}."
+                f"Could not find dashboard data at {dashboard_id_endpoint}."
                 "Uploading it."
             )
             return None
@@ -158,11 +209,11 @@ class CosRegistrationAgent:
                 with open(dashboard_file, "r") as f:
                     updated_dashboard_data = json.load(f)
                     dashboard_id = dashboard_file.stem
-                    dashboard_id_url = self._get_dashboard_id_url(
+                    dashboard_id_endpoint = self._get_dashboard_id_endpoint(
                         dashboard_id, application
                     )
                     current_dashboard_data = self._get_dashboard_data(
-                        dashboard_id_url
+                        dashboard_id_endpoint
                     )
                     if current_dashboard_data is None:
                         self._add_dashboard(dashboard_file, application)
@@ -170,13 +221,13 @@ class CosRegistrationAgent:
                         updated_dashboard = json.dumps(updated_dashboard_data)
                         if current_dashboard_data != updated_dashboard:
                             self._patch_dashboard(
-                                dashboard_id_url,
+                                dashboard_id_endpoint,
                                 updated_dashboard_data,
                             )
 
     def _add_dashboard(self, dashboard_file: Path, application: str):
-        application_url = urljoin(
-            self.cos_applications_url, application + "/dashboards/"
+        application_endpoint = urljoin(
+            self.applications_endpoint, application + "/dashboards/"
         )
         with open(dashboard_file) as dashboard:
             dashboard_content_json = json.load(dashboard)
@@ -185,9 +236,9 @@ class CosRegistrationAgent:
                 "uid": dashboard_name,
                 "dashboard": dashboard_content_json,
             }
-            response = requests.post(
-                application_url,
-                json=dashboard_json,
+            response = self.cos_client.post(
+                application_endpoint,
+                data=dashboard_json,
                 headers=HEADERS,
             )
             if response.status_code != 201:
@@ -200,12 +251,14 @@ class CosRegistrationAgent:
             logger.info("Dashboard added")
 
     def _patch_dashboard(
-        self, dashboard_id_url: str, updated_dashboard_data: dict
+        self, dashboard_id_endpoint: str, updated_dashboard_data: dict
     ) -> None:
         dashboard_json = {
             "dashboard": updated_dashboard_data,
         }
-        response = requests.patch(dashboard_id_url, json=dashboard_json)
+        response = self.cos_client.patch(
+            dashboard_id_endpoint, data=dashboard_json
+        )
 
         if response.status_code != 200:
             error_details = response.json()
@@ -214,26 +267,26 @@ class CosRegistrationAgent:
                 Error: {error_details}"
             )
 
-    def _get_dashboard_id_url(self, dashboard_id, application) -> str:
-        dashbard_id_url = urljoin(
-            self.cos_applications_url,
+    def _get_dashboard_id_endpoint(self, dashboard_id, application) -> str:
+        dashbard_id_endpoint = urljoin(
+            self.applications_endpoint,
             application + "/dashboards/" + dashboard_id + "/",
         )
-        return dashbard_id_url
+        return dashbard_id_endpoint
 
-    def _get_rule_file_data(self, rule_file_id_url: str):
+    def _get_rule_file_data(self, rule_file_id_endpoint: str):
         """Retrieve rule file data from the COS registration server.
 
         Args:
-        - rule_file_id_url(str): the url to get the rule file data from.
+        - rule_file_id_endpoint(str): the endpoint to get the rule file data.
         """
-        response = requests.get(rule_file_id_url)
+        response = self.cos_client.get(rule_file_id_endpoint)
         if response.status_code == 200:
             json_data = response.json()
             return yaml.load(json_data["rules"], yaml.SafeLoader)
         elif response.status_code == 404:
             logger.warning(
-                f"Could not find rule file data at {rule_file_id_url}."
+                f"Could not find rule file data at {rule_file_id_endpoint}."
                 "Uploading it."
             )
             return None
@@ -260,11 +313,11 @@ class CosRegistrationAgent:
                 with open(rule_file, "r") as f:
                     updated_rule_file_data = yaml.safe_load(f)
                     rule_file_id = rule_file.stem
-                    rule_file_id_url = self._get_rule_file_id_url(
+                    rule_file_id_endpoint = self._get_rule_file_id_endpoint(
                         rule_file_id, application
                     )
                     current_rule_file_data = self._get_rule_file_data(
-                        rule_file_id_url
+                        rule_file_id_endpoint
                     )
                     if current_rule_file_data is None:
                         self._add_rule_file(rule_file, application)
@@ -272,13 +325,13 @@ class CosRegistrationAgent:
                         updated_data = yaml.dump(updated_rule_file_data)
                         if current_rule_file_data != updated_data:
                             self._patch_rule_file(
-                                rule_file_id_url,
+                                rule_file_id_endpoint,
                                 updated_data,
                             )
 
     def _add_rule_file(self, rule_file: Path, application: str):
-        application_url = urljoin(
-            self.cos_applications_url, application + "/alert_rules/"
+        application_endpoint = urljoin(
+            self.applications_endpoint, application, "alert_rules/"
         )
         with open(rule_file) as rule_file_data:
             rule_file_content_yaml = yaml.safe_load(rule_file_data)
@@ -287,9 +340,9 @@ class CosRegistrationAgent:
                 "uid": rule_file_name,
                 "rules": yaml.dump(rule_file_content_yaml),
             }
-            response = requests.post(
-                application_url,
-                json=rule_json,
+            response = self.cos_client.post(
+                application_endpoint,
+                data=rule_json,
                 headers=HEADERS,
             )
             if response.status_code != 201:
@@ -302,12 +355,12 @@ class CosRegistrationAgent:
             logger.info("Rule file added")
 
     def _patch_rule_file(
-        self, rule_file_id_url: str, updated_data: str
+        self, rule_file_id_endpoint: str, updated_data: str
     ) -> None:
         rule_json = {
             "rules": updated_data,
         }
-        response = requests.patch(rule_file_id_url, json=rule_json)
+        response = self.cos_client.patch(rule_file_id_endpoint, data=rule_json)
         if response.status_code != 200:
             error_details = response.json()
             logger.error(
@@ -315,9 +368,9 @@ class CosRegistrationAgent:
                 Error: {error_details}"
             )
 
-    def _get_rule_file_id_url(self, rule_file_id, application) -> str:
-        rule_file_id_url = urljoin(
-            self.cos_applications_url,
+    def _get_rule_file_id_endpoint(self, rule_file_id, application) -> str:
+        rule_file_id_endpoint = urljoin(
+            self.applications_endpoint,
             application + "/alert_rules/" + rule_file_id + "/",
         )
-        return rule_file_id_url
+        return rule_file_id_endpoint

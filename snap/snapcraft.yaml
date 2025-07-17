@@ -24,6 +24,9 @@ plugs:
   configuration-read:
     interface: content
     target: $SNAP_COMMON/configuration
+  rob-cos-common-read:
+    interface: content
+    target: $SNAP_COMMON/rob-cos-shared-data
 
 hooks:
   configure:
@@ -53,4 +56,4 @@ apps:
     plugs: [network, rob-cos-common-write, configuration-read, home]
   cos-registration-agent:
     command: bin/cos-registration-agent
-    plugs: [network, rob-cos-common-write, configuration-read, home]
+    plugs: [network, rob-cos-common-write, configuration-read, home, rob-cos-common-read]

@@ -59,7 +59,7 @@ class CosRegistrationServerClient:
             urljoin(self.cos_server_url, endpoint),
             json=data,
             verify=False,
-            headers=self.headers | headers,
+            headers=self.headers | (headers or {}),
             timeout=10,
         )
         return response

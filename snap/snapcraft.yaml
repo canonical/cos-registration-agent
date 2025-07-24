@@ -24,9 +24,6 @@ plugs:
   configuration-read:
     interface: content
     target: $SNAP_COMMON/configuration
-  rob-cos-common-read:
-    interface: content
-    target: $SNAP_COMMON/rob-cos-shared-data
 
 hooks:
   configure:
@@ -50,10 +47,14 @@ parts:
 
 apps:
   update-device-configuration:
+    environment:
+      REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
     command: usr/bin/update-device-configuration.sh
     daemon: oneshot
     install-mode: disable
     plugs: [network, rob-cos-common-write, configuration-read, home]
   cos-registration-agent:
+    environment:
+      REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
     command: bin/cos-registration-agent
-    plugs: [network, rob-cos-common-write, configuration-read, home, rob-cos-common-read]
+    plugs: [network, rob-cos-common-write, configuration-read, home]

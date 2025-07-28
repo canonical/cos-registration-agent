@@ -45,4 +45,4 @@ if [ -d "${CONFIGURATION_DIR_PATH}/prometheus_alert_rules" ]; then
 fi
 
 # Call the update command with the args
-REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt ${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} setup -c ${CONFIGURATION_FILE_PATH}
+REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt ${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} update -c ${CONFIGURATION_FILE_PATH}

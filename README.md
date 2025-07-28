@@ -104,10 +104,7 @@ This setup allows the applications to verify server certificates,
 including self-signed or internally issued certificates,
 as long as they are installed on the device and the CA bundle is updated using `update-ca-certificates`.
 
-This means, that when using a self-signed certificate or a certificate issued by an internal CA,
-TLS communication will work by installing the certificate on the device and updating the CA bundle with .
-
-The variable will not affect the behaviour of the agent with no TLS.
+This environment variable does not affect the agent’s behavior when TLS is not used.
 
 ### Examples
 

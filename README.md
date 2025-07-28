@@ -98,7 +98,7 @@ defaults.
 
 To support TLS communication with the COS for devices server,
 the `REQUESTS_CA_BUNDLE` environment variable is set in the Snap applications.
-This ensures that the Python requests library uses the system's default CA bundle located at `etc/ssl/certs/ca-certificates.crt`.
+This ensures that the Python `requests` library uses the system's default CA bundle located at `etc/ssl/certs/ca-certificates.crt`.
 
 This setup allows the applications to verify server certificates,
 including self-signed or internally issued certificates,

@@ -44,4 +44,5 @@ if [ -d "${CONFIGURATION_DIR_PATH}/prometheus_alert_rules" ]; then
     REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --prometheus-alert-rule-files ${CONFIGURATION_DIR_PATH}/prometheus_alert_rules"
 fi
 
+# Call the update command with the args
 ${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} update -c ${CONFIGURATION_FILE_PATH}

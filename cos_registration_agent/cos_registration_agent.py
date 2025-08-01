@@ -12,7 +12,7 @@ import yaml
 logger = logging.getLogger(__name__)
 
 API_VERSION = str("api/v1/")
-HEADERS = {"Content-Type": "application/json"}
+HEADERS_APPLICATION_JSON = {"Content-Type": "application/json"}
 
 
 def _validate_token(token_file: Optional[Path] = None) -> Optional[str]:
@@ -127,7 +127,9 @@ class CosRegistrationAgent:
         device_data["uid"] = self.device_id
 
         response = self.cos_client.post(
-            self.devices_endpoint, data=device_data, headers=HEADERS
+            self.devices_endpoint,
+            data=device_data,
+            headers=HEADERS_APPLICATION_JSON,
         )
         if response.status_code != 201:
             logger.error(
@@ -261,7 +263,7 @@ class CosRegistrationAgent:
             response = self.cos_client.post(
                 application_endpoint,
                 data=dashboard_json,
-                headers=HEADERS,
+                headers=HEADERS_APPLICATION_JSON,
             )
             if response.status_code != 201:
                 logger.error(
@@ -365,7 +367,7 @@ class CosRegistrationAgent:
             response = self.cos_client.post(
                 application_endpoint,
                 data=rule_json,
-                headers=HEADERS,
+                headers=HEADERS_APPLICATION_JSON,
             )
             if response.status_code != 201:
                 logger.error(

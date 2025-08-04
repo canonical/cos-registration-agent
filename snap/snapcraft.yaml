@@ -17,6 +17,13 @@ slots:
       read:
         - $SNAP
 
+# Set the REQUESTS_CA_BUNDLE to make sure that
+# python requests library use host certificates.
+# Otherwise it will use the ones provided by `certifi`,
+# which will not include missing self-signed COS certificates
+environment:
+  REQUESTS_CA_BUNDLE: /etc/ssl/certs/ca-certificates.crt
+
 plugs:
   rob-cos-common-write:
     interface: content

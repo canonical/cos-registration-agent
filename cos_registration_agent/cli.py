@@ -177,6 +177,13 @@ def _parse_args() -> ArgumentParser.parse_args:
         help="Set the logging level",
     )
 
+    parser.add_argument(
+        "--bearer-token-file",
+        help="Authorization bearer token file path",
+        type=Path,
+        default=None,
+    )
+
     return parser.parse_args()
 
 
@@ -209,7 +216,10 @@ def main():
 
     device_ip_address = get_machine_ip_address(args.url)
     logger.debug(f"Device ip address: {device_ip_address}")
-    cos_registration_agent = CosRegistrationAgent(args.url, device_id)
+
+    cos_registration_agent = CosRegistrationAgent(
+        args.url, device_id, args.bearer_token_file
+    )
     ssh_key_manager = SSHKeysManager()
     try:
         if args.action == "setup":

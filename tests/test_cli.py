@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import ANY, patch, MagicMock
+from unittest.mock import ANY, patch
 import sys
 import configargparse
 
@@ -17,6 +17,11 @@ class TestCli(unittest.TestCase):
         self.robot_uid_args = ["--uid", self.robot_uid]
 
         self.robot_ip = "1.2.3.4"
+
+        self.bearer_token_file = "path/to/secret/token.txt"
+        self.bearer_token_arg = [
+            f"--bearer-token-file={self.bearer_token_file}"
+        ]
 
         self.server_url = "http://my-cos-server"
         self.server_url_args = ["--url", self.server_url]
@@ -84,6 +89,32 @@ class TestCli(unittest.TestCase):
             loki_alert_rule_files=[],
             prometheus_alert_rule_files=[],
         )
+
+    @patch("cos_registration_agent.cli.SSHKeysManager.write_keys")
+    @patch("cos_registration_agent.cli.CosRegistrationAgent")
+    @patch("cos_registration_agent.cli.get_machine_ip_address")
+    @patch("pathlib.Path.is_file", return_value=True)
+    def test_identity_protected_setup(
+        self,
+        mock_is_file,
+        mock_get_machine_ip,
+        MockCosRegistrationAgent,
+        mock_write_keys,
+    ):
+        mock_get_machine_ip.return_value = self.robot_ip
+        setup_args = ["setup"]
+        setup_args.extend(self.robot_uid_args)
+        setup_args.extend(self.server_url_args)
+        self.generic_args.extend(self.bearer_token_arg)
+        sys.argv.extend(self.generic_args)
+        sys.argv.extend(setup_args)
+        cli.main()
+
+        args, _ = MockCosRegistrationAgent.call_args
+        self.assertEqual(len(args), 3)
+        self.assertEqual(args[0], self.server_url)
+        self.assertEqual(args[1], self.robot_uid)
+        self.assertEqual(str(args[2]), self.bearer_token_file)
 
     @patch("cos_registration_agent.cli.CosRegistrationAgent")
     @patch("cos_registration_agent.cli.get_machine_ip_address")

@@ -60,30 +60,54 @@ class TestCli(unittest.TestCase):
     @patch("cos_registration_agent.cli.SSHKeysManager.write_keys")
     @patch("cos_registration_agent.cli.CosRegistrationAgent")
     @patch("cos_registration_agent.cli.get_machine_ip_address")
-    def test_setup(
+    def test_setup_variants(
         self, mock_get_machine_ip, MockCosRegistrationAgent, mock_write_keys
     ):
-        mock_cos_registration_agent = MockCosRegistrationAgent.return_value
-        mock_get_machine_ip.return_value = self.robot_ip
-        setup_args = ["setup"]
-        setup_args.extend(self.robot_uid_args)
-        setup_args.extend(self.server_url_args)
-        sys.argv.extend(self.generic_args)
-        sys.argv.extend(setup_args)
-        cli.main()
+        test_cases = [
+            {
+                "name": "without_tls",
+                "extra_args": [],
+                "expected_tls_cert_handler": None,
+            },
+            {
+                "name": "with_tls",
+                "extra_args": ["--generate-device-tls-certificate"],
+                "expected_tls_cert_handler": ANY,
+            },
+        ]
 
-        mock_cos_registration_agent.patch_dashboards.assert_called()
+        for case in test_cases:
+            with self.subTest(name=case["name"]):
+                configargparse._parsers = {}
 
-        mock_cos_registration_agent.patch_rule_files.assert_called()
+                sys.argv = ["cos-registration-agent"]
 
-        mock_cos_registration_agent.register_device.assert_called_once_with(
-            address=self.robot_ip,
-            public_ssh_key=ANY,
-            grafana_dashboards=[],
-            foxglove_dashboards=[],
-            loki_alert_rule_files=[],
-            prometheus_alert_rule_files=[],
-        )
+                mock_cos_registration_agent = (
+                    MockCosRegistrationAgent.return_value
+                )
+                mock_get_machine_ip.return_value = self.robot_ip
+
+                setup_args = ["setup"]
+                setup_args.extend(self.robot_uid_args)
+                setup_args.extend(self.server_url_args)
+                setup_args.extend(case["extra_args"])
+                sys.argv.extend(self.generic_args)
+                sys.argv.extend(setup_args)
+                cli.main()
+
+                mock_cos_registration_agent.patch_dashboards.assert_called()
+                mock_cos_registration_agent.patch_rule_files.assert_called()
+
+                mock_cos_registration_agent.register_device.assert_called_once_with(
+                    address=self.robot_ip,
+                    public_ssh_key=ANY,
+                    grafana_dashboards=[],
+                    foxglove_dashboards=[],
+                    loki_alert_rule_files=[],
+                    prometheus_alert_rule_files=[],
+                    tls_cert_handler=case["expected_tls_cert_handler"],
+                )
+                mock_cos_registration_agent.register_device.reset_mock()
 
     @patch("cos_registration_agent.cli.CosRegistrationAgent")
     @patch("cos_registration_agent.cli.get_machine_ip_address")

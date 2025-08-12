@@ -11,6 +11,7 @@ from cos_registration_agent.cos_registration_agent import CosRegistrationAgent
 from cos_registration_agent.machine_id import get_machine_id
 from cos_registration_agent.machine_ip_address import get_machine_ip_address
 from cos_registration_agent.ssh_key_manager import SSHKeysManager
+from cos_registration_agent.tls_certs_manager import save_device_tls_certs
 from cos_registration_agent.write_data import write_data
 
 
@@ -58,6 +59,12 @@ def _parse_args() -> ArgumentParser.parse_args:
         help="list of Prometheus alert rule files to render for this device",
         nargs="+",
         default=[],
+    )
+
+    setup_parser.add_argument(
+        "--generate-device-tls-certificate",
+        help="generate a TLS certificate and key for this device",
+        action="store_true",
     )
 
     setup_parser.add_argument(
@@ -246,6 +253,11 @@ def main():
                     foxglove_dashboards=args.device_foxglove_dashboards,
                     loki_alert_rule_files=args.device_loki_alert_rule_files,
                     prometheus_alert_rule_files=args.device_prometheus_alert_rule_files,
+                    tls_cert_handler=(
+                        save_device_tls_certs
+                        if args.generate_device_tls_certificate
+                        else None
+                    ),
                 )
             except SystemError as e:
                 logger.error(f"Could not create device:{e}")

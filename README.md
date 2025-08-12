@@ -114,6 +114,11 @@ cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup
 
 ```
 
+Setup device with generation of TLS certificates:
+```
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup --url http://127.0.0.1:8000/ --generate-device-tls-certificate
+```
+
 Patch grafana dashboards:
 ```
 cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://127.0.0.1:8000/ --grafana-dashboards /device_dashboards/grafana_dashboards
@@ -137,6 +142,7 @@ With the following configuration file `config.yaml`:
 ```
 url: http://cos-server/cos-robotics-model-cos-registration-server/
 uid: my-robot-uid
+generate-device-tls-certificate: True
 grafana-dashboards: path/to_grafana_dashboards/
 foxglove-studio-dashboards: path/to_foxglove_studio_dashboards/
 loki-alert-rule-files: path/to_loki_alert_rule_files

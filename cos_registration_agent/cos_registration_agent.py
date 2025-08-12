@@ -73,8 +73,8 @@ class CosRegistrationAgent:
             raise SystemError
 
         if tls_cert_handler:
-            cert = response.data.get("certificate")  # type: ignore
-            key = response.data.get("private_key")  # type: ignore
+            cert = response.json().get("certificate")
+            key = response.json().get("private_key")
 
             tls_cert_handler(cert, key)
 

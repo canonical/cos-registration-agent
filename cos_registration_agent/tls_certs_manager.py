@@ -8,7 +8,7 @@ from cos_registration_agent.write_data import write_data
 logger = logging.getLogger(__name__)
 
 
-def save_device_tls_certs(self, cert_file, key_file, certs_dir):
+def save_device_tls_certs(cert_file, key_file, certs_dir):
     """Generate SSH keys and write them to a folder.
 
     Args:

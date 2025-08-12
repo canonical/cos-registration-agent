@@ -3,7 +3,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Callable, Optional, Set, Union
+from typing import Optional, Set, Tuple, Union
 from urllib.parse import urljoin
 
 import requests
@@ -44,9 +44,8 @@ class CosRegistrationAgent:
 
     def register_device(
         self,
-        tls_cert_handler: Optional[Callable[[str, str], None]] = None,
         **fields: Union[str, Set[str], bool],
-    ) -> None:
+    ) -> Optional[Tuple[str, str]]:
         """Register device on the COS registration server.
 
         Args:
@@ -56,9 +55,6 @@ class CosRegistrationAgent:
         device_data = dict(fields)
 
         device_data["uid"] = self.device_id
-
-        if tls_cert_handler is not None:
-            device_data["generate_certificate"] = True
 
         json_data = json.dumps(device_data)
         response = requests.post(
@@ -72,13 +68,14 @@ class CosRegistrationAgent:
             )
             raise SystemError
 
-        if tls_cert_handler:
+        logger.info("Device created")
+
+        if device_data.get("generate_certificate"):
             cert = response.json().get("certificate")
             key = response.json().get("private_key")
+            return cert, key
 
-            tls_cert_handler(cert, key)
-
-        logger.info("Device created")
+        return None
 
     def delete_device(self) -> None:
         """Delete device from the COS registration server."""

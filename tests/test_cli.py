@@ -67,12 +67,12 @@ class TestCli(unittest.TestCase):
             {
                 "name": "without_tls",
                 "extra_args": [],
-                "expected_tls_cert_handler": None,
+                "generate_certificate": False,
             },
             {
                 "name": "with_tls",
                 "extra_args": ["--generate-device-tls-certificate"],
-                "expected_tls_cert_handler": ANY,
+                "generate_certificate": True,
             },
         ]
 
@@ -101,11 +101,11 @@ class TestCli(unittest.TestCase):
                 mock_cos_registration_agent.register_device.assert_called_once_with(
                     address=self.robot_ip,
                     public_ssh_key=ANY,
+                    generate_certificate=case["generate_certificate"],
                     grafana_dashboards=[],
                     foxglove_dashboards=[],
                     loki_alert_rule_files=[],
                     prometheus_alert_rule_files=[],
-                    tls_cert_handler=case["expected_tls_cert_handler"],
                 )
                 mock_cos_registration_agent.register_device.reset_mock()
 

@@ -108,6 +108,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
             payload = json.loads(request.body)
             self.assertEqual(payload["uid"], self.device_uid)
             self.assertEqual(payload["address"], device_ip)
+            self.assertTrue(payload["generate_certificate"])
 
             headers = {"content-type": "application/json"}
             body = json.dumps(
@@ -125,13 +126,18 @@ class TestCosRegistrationAgent(unittest.TestCase):
             content_type="application/json",
         )
 
-        cert, key = agent.register_device(
+        response = agent.register_device(
             address=device_ip,
             generate_certificate=True,
         )
 
-        self.assertTrue(cert.startswith("-----BEGIN CERTIFICATE-----"))
-        self.assertTrue(key.startswith("-----BEGIN PRIVATE KEY-----"))
+        data = response.json()
+        self.assertTrue(
+            data["certificate"].startswith("-----BEGIN CERTIFICATE-----")
+        )
+        self.assertTrue(
+            data["private_key"].startswith("-----BEGIN PRIVATE KEY-----")
+        )
 
     def test_fail_register_device(self):
 

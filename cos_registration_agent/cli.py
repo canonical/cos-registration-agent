@@ -11,7 +11,7 @@ from cos_registration_agent.cos_registration_agent import CosRegistrationAgent
 from cos_registration_agent.machine_id import get_machine_id
 from cos_registration_agent.machine_ip_address import get_machine_ip_address
 from cos_registration_agent.ssh_key_manager import SSHKeysManager
-from cos_registration_agent.tls_certs_manager import save_device_tls_certs
+from cos_registration_agent.tls_utils import save_device_tls_certs
 from cos_registration_agent.write_data import write_data
 
 
@@ -188,7 +188,6 @@ def _parse_args() -> ArgumentParser.parse_args:
 
 
 def main():
-
     logger = logging.getLogger(__name__)
     args = _parse_args()
     # flake8: noqa
@@ -246,7 +245,7 @@ def main():
                     application="prometheus",
                 )
             try:
-                tls_cert, tls_key = cos_registration_agent.register_device(
+                registration_response = cos_registration_agent.register_device(
                     address=device_ip_address,
                     public_ssh_key=public_ssh_key,
                     generate_certificate=args.generate_device_tls_certificate,
@@ -255,13 +254,14 @@ def main():
                     loki_alert_rule_files=args.device_loki_alert_rule_files,
                     prometheus_alert_rule_files=args.device_prometheus_alert_rule_files,
                 )
+
+                if args.generate_device_tls_certificate:
+                    save_device_tls_certs(
+                        registration_response, certs_dir=args.shared_data_path
+                    )
             except SystemError as e:
                 logger.error(f"Could not create device:{e}")
                 return
-
-            save_device_tls_certs(
-                tls_cert, tls_key, certs_dir=args.shared_data_path
-            )
 
             ssh_key_manager.write_keys(
                 private_ssh_key, public_ssh_key, folder=args.shared_data_path

@@ -3,11 +3,12 @@
 import json
 import logging
 from pathlib import Path
-from typing import Optional, Set, Tuple, Union
+from typing import Set, Union
 from urllib.parse import urljoin
 
 import requests
 import yaml
+from requests import Response
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ class CosRegistrationAgent:
     def register_device(
         self,
         **fields: Union[str, Set[str], bool],
-    ) -> Optional[Tuple[str, str]]:
+    ) -> Response:
         """Register device on the COS registration server.
 
         Args:
@@ -70,12 +71,7 @@ class CosRegistrationAgent:
 
         logger.info("Device created")
 
-        if device_data.get("generate_certificate"):
-            cert = response.json().get("certificate")
-            key = response.json().get("private_key")
-            return cert, key
-
-        return None
+        return response
 
     def delete_device(self) -> None:
         """Delete device from the COS registration server."""

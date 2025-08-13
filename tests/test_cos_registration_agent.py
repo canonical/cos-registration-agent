@@ -100,6 +100,39 @@ class TestCosRegistrationAgent(unittest.TestCase):
             prometheus_rules_files=device_prometheus_rules_files,
         )
 
+    def test_register_device_request_tls_certs(self):
+        device_ip = "1.2.3.4"
+        agent = CosRegistrationAgent(self.server_url, self.device_uid)
+
+        def request_callback(request):
+            payload = json.loads(request.body)
+            self.assertEqual(payload["uid"], self.device_uid)
+            self.assertEqual(payload["address"], device_ip)
+
+            headers = {"content-type": "application/json"}
+            body = json.dumps(
+                {
+                    "certificate": "-----BEGIN CERTIFICATE-----",
+                    "private_key": "-----BEGIN PRIVATE KEY-----",
+                }
+            )
+            return (201, headers, body)
+
+        self.r_mock.add_callback(
+            responses.POST,
+            self.server_url + "/" + API_VERSION + "devices/",
+            callback=request_callback,
+            content_type="application/json",
+        )
+
+        cert, key = agent.register_device(
+            address=device_ip,
+            generate_certificate=True,
+        )
+
+        self.assertTrue(cert.startswith("-----BEGIN CERTIFICATE-----"))
+        self.assertTrue(key.startswith("-----BEGIN PRIVATE KEY-----"))
+
     def test_fail_register_device(self):
 
         agent = CosRegistrationAgent(self.server_url, self.device_uid)

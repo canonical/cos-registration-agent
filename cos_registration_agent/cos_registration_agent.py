@@ -3,12 +3,11 @@
 import json
 import logging
 from pathlib import Path
-from typing import Set, Union
+from typing import Optional, Set, Tuple, Union
 from urllib.parse import urljoin
 
 import requests
 import yaml
-from requests import Response
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +44,8 @@ class CosRegistrationAgent:
 
     def register_device(
         self,
-        **fields: Union[str, Set[str], bool],
-    ) -> Response:
+        **fields: Union[str, Set[str]],
+    ):
         """Register device on the COS registration server.
 
         Args:
@@ -70,8 +69,6 @@ class CosRegistrationAgent:
             raise SystemError
 
         logger.info("Device created")
-
-        return response
 
     def delete_device(self) -> None:
         """Delete device from the COS registration server."""
@@ -325,3 +322,27 @@ class CosRegistrationAgent:
             application + "/alert_rules/" + rule_file_id + "/",
         )
         return rule_file_id_url
+
+    def get_device_tls_certificate(self) -> Optional[Tuple[str, str]]:
+        """Retrieve device tls cert and key from the COS registration server.
+
+        Args:
+        - device_uid(str): the device uid.
+        """
+        tls_certs_url = urljoin(self.device_id_url, "certificate")
+        response = requests.get(tls_certs_url)
+        if response.status_code == 200:
+            data = response.json()
+            cert = data.get("certificate")
+            key = data.get("private_key")
+            return cert, key
+        elif response.status_code == 404:
+            logger.error(f"Could not retrieve device \
+                         TLS certificate and key at \
+                         {tls_certs_url}")
+            return None
+        else:
+            raise FileNotFoundError(
+                f"Failed to retrieve device TLS certificate data. \
+                Status code: {response.status_code}"
+            )

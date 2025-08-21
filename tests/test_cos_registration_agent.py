@@ -100,45 +100,6 @@ class TestCosRegistrationAgent(unittest.TestCase):
             prometheus_rules_files=device_prometheus_rules_files,
         )
 
-    def test_register_device_request_tls_certs(self):
-        device_ip = "1.2.3.4"
-        agent = CosRegistrationAgent(self.server_url, self.device_uid)
-
-        def request_callback(request):
-            payload = json.loads(request.body)
-            self.assertEqual(payload["uid"], self.device_uid)
-            self.assertEqual(payload["address"], device_ip)
-            self.assertTrue(payload["generate_certificate"])
-
-            headers = {"content-type": "application/json"}
-            body = json.dumps(
-                {
-                    "certificate": "-----BEGIN CERTIFICATE-----",
-                    "private_key": "-----BEGIN PRIVATE KEY-----",
-                }
-            )
-            return (201, headers, body)
-
-        self.r_mock.add_callback(
-            responses.POST,
-            self.server_url + "/" + API_VERSION + "devices/",
-            callback=request_callback,
-            content_type="application/json",
-        )
-
-        response = agent.register_device(
-            address=device_ip,
-            generate_certificate=True,
-        )
-
-        data = response.json()
-        self.assertTrue(
-            data["certificate"].startswith("-----BEGIN CERTIFICATE-----")
-        )
-        self.assertTrue(
-            data["private_key"].startswith("-----BEGIN PRIVATE KEY-----")
-        )
-
     def test_fail_register_device(self):
 
         agent = CosRegistrationAgent(self.server_url, self.device_uid)
@@ -511,3 +472,28 @@ class TestCosRegistrationAgent(unittest.TestCase):
 
                 yaml_safe_load_mock.return_value = loki_rule_file_dict
                 agent.patch_rule_files("path_to_my_rule_file", "loki")
+
+    def test_get_tls_certificate(self):
+        agent = CosRegistrationAgent(self.server_url, self.device_uid)
+
+        self.r_mock.get(
+            self.server_url
+            + "/"
+            + API_VERSION
+            + "devices/"
+            + self.device_uid
+            + "/certificate",
+            json.dumps(
+                {
+                    "certificate": "-----BEGIN CERTIFICATE-----",
+                    "private_key": "-----BEGIN PRIVATE KEY-----",
+                }
+            ),
+            status=200,
+            headers={"content-type": "application/json"},
+        )
+
+        cert, key = agent.get_device_tls_certificate()
+
+        self.assertTrue(cert.startswith("-----BEGIN CERTIFICATE-----"))
+        self.assertTrue(key.startswith("-----BEGIN PRIVATE KEY-----"))

@@ -67,12 +67,10 @@ class TestCli(unittest.TestCase):
             {
                 "name": "without_tls",
                 "extra_args": [],
-                "generate_certificate": False,
             },
             {
                 "name": "with_tls",
                 "extra_args": ["--generate-device-tls-certificate"],
-                "generate_certificate": True,
             },
         ]
 
@@ -98,10 +96,14 @@ class TestCli(unittest.TestCase):
                 mock_cos_registration_agent.patch_dashboards.assert_called()
                 mock_cos_registration_agent.patch_rule_files.assert_called()
 
+                if "--generate-device-tls-certificate" in case["extra_args"]:
+                    mock_cos_registration_agent.get_device_tls_certificate.assert_called()
+                else:
+                    mock_cos_registration_agent.get_device_tls_certificate.assert_not_called()
+
                 mock_cos_registration_agent.register_device.assert_called_once_with(
                     address=self.robot_ip,
                     public_ssh_key=ANY,
-                    generate_certificate=case["generate_certificate"],
                     grafana_dashboards=[],
                     foxglove_dashboards=[],
                     loki_alert_rule_files=[],
@@ -128,6 +130,24 @@ class TestCli(unittest.TestCase):
         mock_cos_registration_agent.patch_device.assert_called_once_with(
             patched_device_arguments
         )
+
+    @patch("cos_registration_agent.cli.CosRegistrationAgent")
+    @patch("cos_registration_agent.cli.get_machine_ip_address")
+    def test_update_tls_certificates(
+        self, mock_get_machine_ip, MockCosRegistrationAgent
+    ):
+        mock_cos_registration_agent = MockCosRegistrationAgent.return_value
+        self.robot_ip = "4.3.2.1"
+        mock_get_machine_ip.return_value = self.robot_ip
+        update_args = ["update"]
+        update_args.extend(self.robot_uid_args)
+        update_args.extend(self.server_url_args)
+        update_args.extend(["--generate-device-tls-certificate"])
+        sys.argv.extend(self.generic_args)
+        sys.argv.extend(update_args)
+        cli.main()
+
+        mock_cos_registration_agent.get_device_tls_certificate.assert_called()
 
     @patch("cos_registration_agent.cli.CosRegistrationAgent")
     @patch("cos_registration_agent.cli.get_machine_ip_address")

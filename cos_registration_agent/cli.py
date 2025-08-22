@@ -257,7 +257,6 @@ def main():
                     loki_alert_rule_files=args.device_loki_alert_rule_files,
                     prometheus_alert_rule_files=args.device_prometheus_alert_rule_files,
                 )
-                logger.debug("YOOOO")
             except SystemError as e:
                 logger.error(f"Could not create device:{e}")
                 return

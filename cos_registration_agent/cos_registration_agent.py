@@ -45,7 +45,7 @@ class CosRegistrationAgent:
     def register_device(
         self,
         **fields: Union[str, Set[str]],
-    ):
+    ) -> None:
         """Register device on the COS registration server.
 
         Args:
@@ -337,9 +337,11 @@ class CosRegistrationAgent:
             key = data.get("private_key")
             return cert, key
         elif response.status_code == 404:
-            logger.error(f"Could not retrieve device \
+            logger.error(
+                f"Could not retrieve device \
                          TLS certificate and key at \
-                         {tls_certs_url}")
+                         {tls_certs_url}"
+            )
             return None
         else:
             raise FileNotFoundError(

@@ -9,10 +9,11 @@ logger = logging.getLogger(__name__)
 
 
 def save_device_tls_certs(cert: str, key: str, certs_dir: str) -> None:
-    """Extract TLS cert/key from HTTP response JSON and save to folder.
+    """Save TLS certificate and key to folder.
 
     Args:
-        response: HTTP response containing 'certificate' and 'private_key'
+        cert: the certificate as string
+        key: the private key as string
         certs_dir (str): Directory to save the certs into.
     """
     if not cert or not key:

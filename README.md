@@ -19,10 +19,15 @@ The `cos_registration_agent` can perform four actions: `setup`, `update`, `write
 Setup is reponsible for identifying and configuring the COS for a given device.
 This action registers first any custom dashboard provided with the device
 and the device itself.
+The setup action can also be called with the `--generate-device-tls-certificate` to
+generate TLS certificate and private key for a device.
 This action will fail if called by an already registered device.
 ### Update
 Update is making sure that the configuration of the COS for a given device
-gets updated over time. This action is meant to be called multiple times.
+gets updated over time.
+The update action can also be called with the `--generate-device-tls-certificate` to
+regenerate TLS certificate and private key for a device.
+This action is meant to be called multiple times.
 ### Write-uid
 Write-uid is responsible for writing the device unique ID in the SNAP_COMMON folder
 where it is made available for other snaps on the device.
@@ -66,8 +71,8 @@ usage: cos-registration-agent [-h] [--config CONFIG] [--url URL] [--shared-data-
 positional arguments:
   {setup,update,write-uid,delete}
                         Action to perform
-    setup               Register device and add custom dashboards
-    update              Update custom device data and dashboards
+    setup               Register device, add custom dashboards and generate device TLS certificates
+    update              Update custom device data and dashboards and device TLS certificates
     write-uid           Write device unique ID to a file
     delete              Delete device from server
 
@@ -114,6 +119,11 @@ cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup
 
 ```
 
+Setup device with generation of TLS certificates:
+```
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup --url http://127.0.0.1:8000/ --generate-device-tls-certificate
+```
+
 Patch grafana dashboards:
 ```
 cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://127.0.0.1:8000/ --grafana-dashboards /device_dashboards/grafana_dashboards
@@ -122,6 +132,11 @@ cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data updat
 Update device ssh keys:
 ```
 cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://127.0.0.1:8000/ --update-ssh-keys
+```
+
+Update device with regeneration of TLS certificates:
+```
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://127.0.0.1:8000/ --generate-device-tls-certificate
 ```
 
 Delete device from COS server:
@@ -137,6 +152,7 @@ With the following configuration file `config.yaml`:
 ```
 url: http://cos-server/cos-robotics-model-cos-registration-server/
 uid: my-robot-uid
+generate-device-tls-certificate: True
 grafana-dashboards: path/to_grafana_dashboards/
 foxglove-studio-dashboards: path/to_foxglove_studio_dashboards/
 loki-alert-rule-files: path/to_loki_alert_rule_files

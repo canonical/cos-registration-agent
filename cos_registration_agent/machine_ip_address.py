@@ -1,8 +1,9 @@
 """Module to retrieve the machine ip."""
 
 import logging
-import urllib.parse
 import socket
+import urllib.parse
+
 from pyroute2 import IPRoute
 
 logger = logging.getLogger(__name__)

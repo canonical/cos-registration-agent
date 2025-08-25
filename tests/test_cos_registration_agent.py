@@ -472,3 +472,28 @@ class TestCosRegistrationAgent(unittest.TestCase):
 
                 yaml_safe_load_mock.return_value = loki_rule_file_dict
                 agent.patch_rule_files("path_to_my_rule_file", "loki")
+
+    def test_get_tls_certificate(self):
+        agent = CosRegistrationAgent(self.server_url, self.device_uid)
+
+        self.r_mock.get(
+            self.server_url
+            + "/"
+            + API_VERSION
+            + "devices/"
+            + self.device_uid
+            + "/certificate",
+            json.dumps(
+                {
+                    "certificate": "-----BEGIN CERTIFICATE-----",
+                    "private_key": "-----BEGIN PRIVATE KEY-----",
+                }
+            ),
+            status=200,
+            headers={"content-type": "application/json"},
+        )
+
+        cert, key = agent.get_device_tls_certificate()
+
+        self.assertTrue(cert.startswith("-----BEGIN CERTIFICATE-----"))
+        self.assertTrue(key.startswith("-----BEGIN PRIVATE KEY-----"))

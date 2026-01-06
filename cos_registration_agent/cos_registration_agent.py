@@ -4,7 +4,7 @@ import json
 import logging
 from pathlib import Path
 from posixpath import join as urljoin
-from typing import Any, Optional, Set, Union
+from typing import Any, Optional, Set, Tuple, Union
 
 import requests
 import yaml
@@ -113,16 +113,17 @@ class CosRegistrationAgent:
             logger.error(error_message)
             raise RuntimeError(error_message)
 
-    def register_device(self, **fields: Union[str, Set[str]]) -> None:
+    def register_device(
+        self,
+        **fields: Union[str, Set[str]],
+    ) -> None:
         """Register device on the COS registration server.
 
         Args:
         **fields: keyword arguments representing device fields.
                     Each field is provided as a key-value pair.
         """
-        device_data = {}
-        for field, value in fields.items():
-            device_data[field] = value
+        device_data = dict(fields)
 
         device_data["uid"] = self.device_id
 
@@ -398,3 +399,29 @@ class CosRegistrationAgent:
             application + "/alert_rules/" + rule_file_id + "/",
         )
         return rule_file_id_endpoint
+
+    def get_device_tls_certificate(self) -> Optional[Tuple[str, str]]:
+        """Retrieve device tls cert and key from the COS registration server.
+
+        Args:
+        - device_uid(str): the device uid.
+        """
+        tls_certs_url = urljoin(self.device_id_endpoint, "certificate")
+        response = self.cos_client.get(tls_certs_url)
+        if response.status_code == 200:
+            data = response.json()
+            cert = data.get("certificate")
+            key = data.get("private_key")
+            return cert, key
+        elif response.status_code == 404:
+            logger.error(
+                f"Could not retrieve device \
+                         TLS certificate and key at \
+                         {tls_certs_url}"
+            )
+            return None
+        else:
+            raise FileNotFoundError(
+                f"Failed to retrieve device TLS certificate data. \
+                Status code: {response.status_code}"
+            )

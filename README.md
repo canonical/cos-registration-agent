@@ -19,10 +19,15 @@ The `cos_registration_agent` can perform four actions: `setup`, `update`, `write
 Setup is reponsible for identifying and configuring the COS for a given device.
 This action registers first any custom dashboard provided with the device
 and the device itself.
+The setup action can also be called with the `--generate-device-tls-certificate` to
+generate TLS certificate and private key for a device.
 This action will fail if called by an already registered device.
 ### Update
 Update is making sure that the configuration of the COS for a given device
-gets updated over time. This action is meant to be called multiple times.
+gets updated over time.
+The update action can also be called with the `--generate-device-tls-certificate` to
+regenerate TLS certificate and private key for a device.
+This action is meant to be called multiple times.
 ### Write-uid
 Write-uid is responsible for writing the device unique ID in the SNAP_COMMON folder
 where it is made available for other snaps on the device.
@@ -66,8 +71,8 @@ usage: cos-registration-agent [-h] [--config CONFIG] [--url URL] [--shared-data-
 positional arguments:
   {setup,update,write-uid,delete}
                         Action to perform
-    setup               Register device and add custom dashboards
-    update              Update custom device data and dashboards
+    setup               Register device, add custom dashboards and generate device TLS certificates
+    update              Update custom device data and dashboards and device TLS certificates
     write-uid           Write device unique ID to a file
     delete              Delete device from server
 
@@ -94,12 +99,29 @@ stuff=[a,b,c] (for details, see syntax at https://goo.gl/R74nmi). In general, co
 defaults.
 ```
 
+### TLS
+
+To support TLS communication with the COS for devices server,
+the `REQUESTS_CA_BUNDLE` environment variable is set in the snap.
+This ensures that the Python `requests` library uses the system's default CA bundle located at `/etc/ssl/certs/ca-certificates.crt`.
+
+This setup allows the applications to verify server certificates,
+including self-signed or internally issued certificates,
+as long as they are installed on the device and the CA bundle is updated using `update-ca-certificates`.
+
+This environment variable does not affect the agent’s behavior when TLS is not used.
+
 ### Examples
 
 Setup device with custom grafana dashboard example:
 ```
 cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup --url http://127.0.0.1:8000/ --grafana-dashboards /home/giuseppe/device_dashboards/grafana_dashboards  --device-grafana-dashboards my_dashboard1 my_dashboard2
 
+```
+
+Setup device with generation of TLS certificates:
+```
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup --url http://127.0.0.1:8000/ --generate-device-tls-certificate
 ```
 
 Patch grafana dashboards:
@@ -110,6 +132,11 @@ cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data updat
 Update device ssh keys:
 ```
 cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://127.0.0.1:8000/ --update-ssh-keys
+```
+
+Update device with regeneration of TLS certificates:
+```
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://127.0.0.1:8000/ --generate-device-tls-certificate
 ```
 
 Delete device from COS server:
@@ -125,6 +152,7 @@ With the following configuration file `config.yaml`:
 ```
 url: http://cos-server/cos-robotics-model-cos-registration-server/
 uid: my-robot-uid
+generate-device-tls-certificate: True
 grafana-dashboards: path/to_grafana_dashboards/
 foxglove-studio-dashboards: path/to_foxglove_studio_dashboards/
 loki-alert-rule-files: path/to_loki_alert_rule_files

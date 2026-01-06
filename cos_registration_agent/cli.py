@@ -11,6 +11,7 @@ from cos_registration_agent.cos_registration_agent import CosRegistrationAgent
 from cos_registration_agent.machine_id import get_machine_id
 from cos_registration_agent.machine_ip_address import get_machine_ip_address
 from cos_registration_agent.ssh_key_manager import SSHKeysManager
+from cos_registration_agent.tls_utils import save_device_tls_certs
 from cos_registration_agent.write_data import write_data
 
 
@@ -61,6 +62,12 @@ def _parse_args() -> ArgumentParser.parse_args:
     )
 
     setup_parser.add_argument(
+        "--generate-device-tls-certificate",
+        help="generate a TLS certificate and key for this device",
+        action="store_true",
+    )
+
+    setup_parser.add_argument(
         "-c",
         "--config",
         is_config_file=True,
@@ -108,7 +115,11 @@ def _parse_args() -> ArgumentParser.parse_args:
         nargs="+",
         default=[],
     )
-
+    update_parser.add_argument(
+        "--generate-device-tls-certificate",
+        help="generate a TLS certificate and key for this device",
+        action="store_true",
+    )
     update_parser.add_argument(
         "-c",
         "--config",
@@ -188,7 +199,6 @@ def _parse_args() -> ArgumentParser.parse_args:
 
 
 def main():
-
     logger = logging.getLogger(__name__)
     args = _parse_args()
     # flake8: noqa
@@ -261,6 +271,16 @@ def main():
                 logger.error(f"Could not create device:{e}")
                 return
 
+            if args.generate_device_tls_certificate:
+                cert, key = cos_registration_agent.get_device_tls_certificate()
+                if not cert or not key:
+                    raise RuntimeError(
+                        "No TLS certificate or key found in response."
+                    )
+                save_device_tls_certs(
+                    cert, key, certs_dir=args.shared_data_path
+                )
+
             ssh_key_manager.write_keys(
                 private_ssh_key, public_ssh_key, folder=args.shared_data_path
             )
@@ -307,6 +327,15 @@ def main():
                 cos_registration_agent.patch_rule_files(
                     rule_files_path=args.prometheus_alert_rule_files,
                     application="prometheus",
+                )
+            if args.generate_device_tls_certificate:
+                cert, key = cos_registration_agent.get_device_tls_certificate()
+                if not cert or not key:
+                    raise RuntimeError(
+                        "No TLS certificate or key found in response."
+                    )
+                save_device_tls_certs(
+                    cert, key, certs_dir=args.shared_data_path
                 )
             cos_registration_agent.patch_device(data_to_update)
         elif args.action == "delete":

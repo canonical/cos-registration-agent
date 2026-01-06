@@ -489,3 +489,28 @@ class TestCosRegistrationAgent(unittest.TestCase):
                 agent.cos_client.headers["Authorization"],
                 "bearer my-secret-token",
             )
+
+    def test_get_tls_certificate(self):
+        agent = CosRegistrationAgent(self.server_url, self.device_uid)
+
+        self.r_mock.get(
+            self.server_url
+            + "/"
+            + API_VERSION
+            + "devices/"
+            + self.device_uid
+            + "/certificate",
+            json.dumps(
+                {
+                    "certificate": "-----BEGIN CERTIFICATE-----",
+                    "private_key": "-----BEGIN PRIVATE KEY-----",
+                }
+            ),
+            status=200,
+            headers={"content-type": "application/json"},
+        )
+
+        cert, key = agent.get_device_tls_certificate()
+
+        self.assertTrue(cert.startswith("-----BEGIN CERTIFICATE-----"))
+        self.assertTrue(key.startswith("-----BEGIN PRIVATE KEY-----"))

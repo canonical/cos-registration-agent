@@ -42,7 +42,7 @@ fi
 
 # Check if identity token exists in configuration
 if [ -f "${IDENTITY_TOKEN_FILE_PATH}" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --bearer-token-file ${IDENTITY_TOKEN_FILE_PATH}"
+    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --token-file ${IDENTITY_TOKEN_FILE_PATH}"
 fi
 
 # Call the registration command with the args

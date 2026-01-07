@@ -189,7 +189,7 @@ def _parse_args() -> ArgumentParser.parse_args:
     )
 
     parser.add_argument(
-        "--bearer-token-file",
+        "--token-file",
         help="Authorization bearer token file path",
         type=Path,
         default=None,
@@ -228,7 +228,7 @@ def main():
     logger.debug(f"Device ip address: {device_ip_address}")
 
     cos_registration_agent = CosRegistrationAgent(
-        args.url, device_id, args.bearer_token_file
+        args.url, device_id, args.token_file
     )
     ssh_key_manager = SSHKeysManager()
     try:

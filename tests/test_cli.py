@@ -19,9 +19,7 @@ class TestCli(unittest.TestCase):
         self.robot_ip = "1.2.3.4"
 
         self.bearer_token_file = "path/to/secret/token.txt"
-        self.bearer_token_arg = [
-            f"--bearer-token-file={self.bearer_token_file}"
-        ]
+        self.bearer_token_arg = [f"--token-file={self.bearer_token_file}"]
 
         self.server_url = "http://my-cos-server"
         self.server_url_args = ["--url", self.server_url]

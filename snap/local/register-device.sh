@@ -1,6 +1,7 @@
 #!/bin/sh -e
 
-CONFIGURATION_FILE_PATH=${SNAP_COMMON}/configuration/device.yaml
+CONFIGURATION_FILE_PATH="${SNAP_COMMON}/configuration/device.yaml"
+IDENTITY_TOKEN_FILE_PATH="${SNAP_COMMON}/rob-cos-shared-data/identity/token.txt"
 
 if [ -n "$1" ]; then
     CONFIGURATION_FILE_PATH="$1"
@@ -37,6 +38,11 @@ fi
 # Check if prometheus_alert_rules directory exists in configuration
 if [ -d "${CONFIGURATION_DIR_PATH}/prometheus_alert_rules" ]; then
     REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --prometheus-alert-rule-files ${CONFIGURATION_DIR_PATH}/prometheus_alert_rules"
+fi
+
+# Check if identity token exists in configuration
+if [ -f "${IDENTITY_TOKEN_FILE_PATH}" ]; then
+    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --token-file ${IDENTITY_TOKEN_FILE_PATH}"
 fi
 
 # Call the registration command with the args

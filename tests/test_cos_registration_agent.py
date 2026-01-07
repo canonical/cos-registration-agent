@@ -27,6 +27,8 @@ class TestCosRegistrationAgent(unittest.TestCase):
 
         self.device_uid = "my-robot"
 
+        self.bearer_token = "my-secret-token"
+
         # optionally some default responses could be registered
         self.r_mock.get(
             self.server_url + "/" + API_VERSION + "health/", status=200
@@ -472,6 +474,21 @@ class TestCosRegistrationAgent(unittest.TestCase):
 
                 yaml_safe_load_mock.return_value = loki_rule_file_dict
                 agent.patch_rule_files("path_to_my_rule_file", "loki")
+
+    @patch("pathlib.Path.is_file", return_value=True)
+    def test_bearer_token_file(self, mock_is_file):
+        """Test that CosRegistrationAgent reads the bearer token from file and passes it to the client."""
+        with patch("pathlib.Path.read_text", return_value=self.bearer_token):
+            agent = CosRegistrationAgent(
+                self.server_url,
+                self.device_uid,
+                token_file=Path("/fake/token/file"),
+            )
+            self.assertIn("Authorization", agent.cos_client.headers)
+            self.assertEqual(
+                agent.cos_client.headers["Authorization"],
+                "bearer my-secret-token",
+            )
 
     def test_get_tls_certificate(self):
         agent = CosRegistrationAgent(self.server_url, self.device_uid)

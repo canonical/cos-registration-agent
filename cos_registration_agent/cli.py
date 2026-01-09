@@ -11,7 +11,6 @@ from cos_registration_agent.cos_registration_agent import CosRegistrationAgent
 from cos_registration_agent.machine_id import get_machine_id
 from cos_registration_agent.machine_ip_address import get_machine_ip_address
 from cos_registration_agent.ssh_key_manager import SSHKeysManager
-from cos_registration_agent.tls_utils import save_device_tls_certs
 from cos_registration_agent.write_data import write_data
 
 
@@ -227,9 +226,16 @@ def main():
     device_ip_address = get_machine_ip_address(args.url)
     logger.debug(f"Device ip address: {device_ip_address}")
 
-    cos_registration_agent = CosRegistrationAgent(
-        args.url, device_id, args.token_file
+    certs_path = (
+        args.shared_data_path
+        if getattr(args, "generate_device_tls_certificate", False)
+        else None
     )
+
+    cos_registration_agent = CosRegistrationAgent(
+        args.url, device_id, args.token_file, certs_dir=certs_path
+    )
+
     ssh_key_manager = SSHKeysManager()
     try:
         if args.action == "setup":
@@ -272,14 +278,18 @@ def main():
                 return
 
             if args.generate_device_tls_certificate:
-                cert, key = cos_registration_agent.get_device_tls_certificate()
-                if not cert or not key:
-                    raise RuntimeError(
-                        "No TLS certificate or key found in response."
-                    )
-                save_device_tls_certs(
-                    cert, key, certs_dir=args.shared_data_path
-                )
+                if cos_registration_agent.request_device_tls_certificate(
+                    device_ip_address
+                ):
+                    logger.info("Starting certificate polling...")
+                    if not cos_registration_agent.poll_for_certificate(
+                        timeout_seconds=600
+                    ):
+                        logger.error(
+                            "Failed to obtain signed certificate within timeout."
+                        )
+                else:
+                    logger.error("Failed to submit CSR.")
 
             ssh_key_manager.write_keys(
                 private_ssh_key, public_ssh_key, folder=args.shared_data_path
@@ -329,14 +339,18 @@ def main():
                     application="prometheus",
                 )
             if args.generate_device_tls_certificate:
-                cert, key = cos_registration_agent.get_device_tls_certificate()
-                if not cert or not key:
-                    raise RuntimeError(
-                        "No TLS certificate or key found in response."
-                    )
-                save_device_tls_certs(
-                    cert, key, certs_dir=args.shared_data_path
-                )
+                if cos_registration_agent.request_device_tls_certificate(
+                    device_ip_address
+                ):
+                    logger.info("Starting certificate polling...")
+                    if not cos_registration_agent.poll_for_certificate(
+                        timeout_seconds=600
+                    ):
+                        logger.error(
+                            "Failed to obtain signed certificate within timeout."
+                        )
+                else:
+                    logger.error("Failed to submit CSR.")
             cos_registration_agent.patch_device(data_to_update)
         elif args.action == "delete":
             cos_registration_agent.delete_device()

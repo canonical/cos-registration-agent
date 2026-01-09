@@ -100,9 +100,11 @@ class TestCli(unittest.TestCase):
                 mock_cos_registration_agent.patch_rule_files.assert_called()
 
                 if "--generate-device-tls-certificate" in case["extra_args"]:
-                    mock_cos_registration_agent.get_device_tls_certificate.assert_called()
+                    mock_cos_registration_agent.request_device_tls_certificate.assert_called()
+                    mock_cos_registration_agent.poll_for_certificate.assert_called()
                 else:
-                    mock_cos_registration_agent.get_device_tls_certificate.assert_not_called()
+                    mock_cos_registration_agent.request_device_tls_certificate.assert_not_called()
+                    mock_cos_registration_agent.poll_for_certificate.assert_not_called()
 
                 mock_cos_registration_agent.register_device.assert_called_once_with(
                     address=self.robot_ip,
@@ -176,7 +178,8 @@ class TestCli(unittest.TestCase):
         sys.argv.extend(update_args)
         cli.main()
 
-        mock_cos_registration_agent.get_device_tls_certificate.assert_called()
+        mock_cos_registration_agent.request_device_tls_certificate.assert_called()
+        mock_cos_registration_agent.poll_for_certificate.assert_called()
 
     @patch("cos_registration_agent.cli.CosRegistrationAgent")
     @patch("cos_registration_agent.cli.get_machine_ip_address")

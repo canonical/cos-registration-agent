@@ -438,12 +438,10 @@ class CosRegistrationAgent:
             private_key, common_name=self.device_id, device_ip=device_ip
         )
 
-        tls_certs_url = urljoin(self.device_id_endpoint, "certificate")
+        tls_certs_url = urljoin(self.device_id_endpoint, "certificate/")
         payload = {"csr": csr_pem_str}
-
         try:
             response = self.cos_client.post(tls_certs_url, data=payload)
-
             if response.status_code == 202:
                 logger.info("CSR submitted successfully.")
                 return True
@@ -468,10 +466,11 @@ class CosRegistrationAgent:
             bool: True if certificate was successfully received and
                 stored, False otherwise.
         """
+        logger.info("Polling for signed certificate...")
         start_time = time.time()
         interval = 60  # Poll every 60 seconds
 
-        tls_certs_url = urljoin(self.device_id_endpoint, "certificate")
+        tls_certs_url = urljoin(self.device_id_endpoint, "certificate/")
 
         logger.info(
             f"Starting certificate polling "

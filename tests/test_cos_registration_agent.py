@@ -519,7 +519,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
             + API_VERSION
             + "devices/"
             + self.device_uid
-            + "/certificate",
+            + "/certificate/",
             status=202,
         )
 
@@ -565,7 +565,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
             + API_VERSION
             + "devices/"
             + self.device_uid
-            + "/certificate",
+            + "/certificate/",
             status=400,
             body="Bad request",
         )
@@ -594,7 +594,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
             + API_VERSION
             + "devices/"
             + self.device_uid
-            + "/certificate",
+            + "/certificate/",
             json={"status": "signed", "certificate": signed_cert},
             status=200,
         )
@@ -619,7 +619,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
             + API_VERSION
             + "devices/"
             + self.device_uid
-            + "/certificate",
+            + "/certificate/",
             json={"status": "denied"},
             status=200,
         )
@@ -641,7 +641,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
             + API_VERSION
             + "devices/"
             + self.device_uid
-            + "/certificate",
+            + "/certificate/",
             status=404,
         )
 
@@ -696,7 +696,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
             + API_VERSION
             + "devices/"
             + self.device_uid
-            + "/certificate",
+            + "/certificate/",
             json={"status": "pending"},
             status=200,
         )
@@ -706,7 +706,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
             + API_VERSION
             + "devices/"
             + self.device_uid
-            + "/certificate",
+            + "/certificate/",
             json={"status": "signed", "certificate": signed_cert},
             status=200,
         )

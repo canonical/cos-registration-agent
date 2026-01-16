@@ -504,7 +504,9 @@ class CosRegistrationAgent:
                 status = data.get("status")
 
                 if status == "signed":
-                    certificate = data.get("certificate")
+                    # Since this is a leaf certificate, we have to install the
+                    # full chain of certficates.
+                    certificate = data.get("chain")
                     if not certificate:
                         logger.error(
                             "Certificate status is 'signed' but no "

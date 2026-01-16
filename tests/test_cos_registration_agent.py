@@ -595,7 +595,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
             + "devices/"
             + self.device_uid
             + "/certificate/",
-            json={"status": "signed", "certificate": signed_cert},
+            json={"status": "signed", "chain": signed_cert},
             status=200,
         )
 
@@ -707,7 +707,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
             + "devices/"
             + self.device_uid
             + "/certificate/",
-            json={"status": "signed", "certificate": signed_cert},
+            json={"status": "signed", "chain": signed_cert},
             status=200,
         )
 

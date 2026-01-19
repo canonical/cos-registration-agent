@@ -20,13 +20,15 @@ Setup is reponsible for identifying and configuring the COS for a given device.
 This action registers first any custom dashboard provided with the device
 and the device itself.
 The setup action can also be called with the `--generate-device-tls-certificate` to
-generate TLS certificate and private key for a device.
+generate a private key and Certificate Signing Request (CSR), submit them to the server,
+poll for the signed leaf certificate, and install it on the device.
 This action will fail if called by an already registered device.
 ### Update
 Update is making sure that the configuration of the COS for a given device
 gets updated over time.
 The update action can also be called with the `--generate-device-tls-certificate` to
-regenerate TLS certificate and private key for a device.
+regenerate a private key and CSR, submit them to the server,
+poll for the signed leaf certificate, and install it on the device.
 This action is meant to be called multiple times.
 ### Write-uid
 Write-uid is responsible for writing the device unique ID in the SNAP_COMMON folder
@@ -119,7 +121,7 @@ cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup
 
 ```
 
-Setup device with generation of TLS certificates:
+Setup device with generation of TLS certificates (generates CSR, submits to server, polls for signed certificate, and installs it):
 ```
 cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup --url http://127.0.0.1:8000/ --generate-device-tls-certificate
 ```
@@ -134,7 +136,7 @@ Update device ssh keys:
 cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://127.0.0.1:8000/ --update-ssh-keys
 ```
 
-Update device with regeneration of TLS certificates:
+Update device with regeneration of TLS certificates (regenerates CSR, submits to server, polls for signed certificate, and installs it):
 ```
 cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://127.0.0.1:8000/ --generate-device-tls-certificate
 ```

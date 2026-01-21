@@ -3,9 +3,11 @@ on:
   push:
     branches:
       - main
+      - track/*
   pull_request:
     branches:
       - main
+      - track/*
   workflow_dispatch:
   workflow_call:
    inputs:

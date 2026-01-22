@@ -674,9 +674,13 @@ class TestCosRegistrationAgent(unittest.TestCase):
             "cos_registration_agent.cos_registration_agent.time.time",
             side_effect=mock_time_fn,
         ):
-            result = agent.poll_for_certificate(timeout_seconds=600)
+            with self.assertRaises(TimeoutError) as context:
+                agent.poll_for_certificate(timeout_seconds=2)
 
-            self.assertFalse(result)
+            self.assertIn(
+                "Timeout: failed to obtain signed certificate",
+                str(context.exception),
+            )
             mock_store_certificate.assert_not_called()
 
     @patch("cos_registration_agent.cos_registration_agent.store_certificate")

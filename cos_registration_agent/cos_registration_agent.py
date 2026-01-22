@@ -551,4 +551,4 @@ class CosRegistrationAgent:
             "Timeout reached: Certificate was not signed within "
             f"{timeout_seconds} seconds."
         )
-        return False
+        raise TimeoutError("Timeout: failed to obtain signed certificate.")

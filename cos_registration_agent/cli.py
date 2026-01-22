@@ -215,24 +215,25 @@ def handle_tls_certificate_polling(
         cos_registration_agent.delete_device()
         return
 
-    success = False
     try:
         logger.info("Starting certificate polling...")
         # Default set to 10 minutes as on_update_status on
         # COS registration server is at least 5 minutes.
-        success = cos_registration_agent.poll_for_certificate(
-            timeout_seconds=600
+        cos_registration_agent.poll_for_certificate(
+            timeout_seconds=600,
         )
-        if not success:
-            logger.error("Timeout: failed to obtain signed certificate")
+    except TimeoutError:
+        logger.error("Timeout: failed to obtain signed certificate")
+        cos_registration_agent.delete_device()
+        return
     except PermissionError as e:
         logger.error(f"CSR denied by the server: {e}")
+        cos_registration_agent.delete_device()
+        return
     except RuntimeError as e:
         logger.error(f"Error during certificate polling: {e}")
-    finally:
-        if not success:
-            cos_registration_agent.delete_device()
-            return
+        cos_registration_agent.delete_device()
+        return
 
 
 def main():

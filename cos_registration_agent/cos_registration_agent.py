@@ -493,6 +493,7 @@ class CosRegistrationAgent:
         Returns:
             bool: True if the certificate was stored, False otherwise.
         Raises:
+            RuntimeError: If certs directory is not configured.
             PermissionError: If the CSR was denied by the server.
         """
         status = certificate_data.get("status")
@@ -502,6 +503,9 @@ class CosRegistrationAgent:
             if not chain:
                 logger.error("Status signed but missing certificate chain.")
                 return False
+
+            if not self.certs_dir:
+                raise RuntimeError("Certs directory not configured.")
 
             store_certificate(chain, self.certs_dir)
             return True

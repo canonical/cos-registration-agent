@@ -197,6 +197,35 @@ def _parse_args() -> ArgumentParser.parse_args:
     return parser.parse_args()
 
 
+def handle_tls_certificate_polling(cos_registration_agent, device_ip_address):
+    logger = logging.getLogger(__name__)
+    if not cos_registration_agent.request_device_tls_certificate(
+        device_ip_address
+    ):
+        logger.error("Failed to submit CSR.")
+        cos_registration_agent.delete_device()
+        return
+
+    success = False
+    try:
+        logger.info("Starting certificate polling...")
+        # Default set to 10 minutes as on_update_status on
+        # COS registration server is at least 5 minutes.
+        success = cos_registration_agent.poll_for_certificate(
+            timeout_seconds=600
+        )
+        if not success:
+            logger.error("Timeout: failed to obtain signed certificate")
+    except PermissionError as e:
+        logger.error(f"CSR denied by the server: {e}")
+    except RuntimeError as e:
+        logger.error(f"Error during certificate polling: {e}")
+    finally:
+        if not success:
+            cos_registration_agent.delete_device()
+            return
+
+
 def main():
     logger = logging.getLogger(__name__)
     args = _parse_args()
@@ -278,31 +307,9 @@ def main():
                 return
 
             if args.generate_device_tls_certificate:
-                if not cos_registration_agent.request_device_tls_certificate(
-                    device_ip_address
-                ):
-                    logger.error("Failed to submit CSR.")
-                    cos_registration_agent.delete_device()
-                    return
-
-                success = False
-                try:
-                    logger.info("Starting certificate polling...")
-                    success = cos_registration_agent.poll_for_certificate(
-                        timeout_seconds=600
-                    )
-                    if not success:
-                        logger.error(
-                            "Timeout: failed to obtain signed certificate"
-                        )
-                except PermissionError as e:
-                    logger.error(f"CSR denied by the server: {e}")
-                except Exception as e:
-                    logger.exception("An unexpected error occurred")
-                finally:
-                    if not success:
-                        cos_registration_agent.delete_device()
-                        return
+                handle_tls_certificate_polling(
+                    cos_registration_agent, device_ip_address
+                )
 
             ssh_key_manager.write_keys(
                 private_ssh_key, public_ssh_key, folder=args.shared_data_path
@@ -352,6 +359,11 @@ def main():
                     application="prometheus",
                 )
             cos_registration_agent.patch_device(data_to_update)
+
+            if args.generate_device_tls_certificate:
+                handle_tls_certificate_polling(
+                    cos_registration_agent, device_ip_address
+                )
         elif args.action == "delete":
             cos_registration_agent.delete_device()
 

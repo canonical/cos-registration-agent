@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+# This hook is triggered when the device-cos-settings confdb view changes
+# Log the change for now - in the future, this could trigger service restarts
+# or update local configuration files
+
+logger -t ${SNAP_NAME} "Device COS settings configuration changed"
+
+# Get the updated configuration
+CONFIG=$(snapctl get --view :device-cos-settings-observe -d)
+logger -t ${SNAP_NAME} "New configuration: ${CONFIG}"
+
+

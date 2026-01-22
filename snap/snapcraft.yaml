@@ -31,6 +31,10 @@ plugs:
   configuration-read:
     interface: content
     target: $SNAP_COMMON/configuration
+  device-cos-settings-observe:
+    interface: confdb
+    account: PLACEHOLDER-ACCOUNT-ID
+    view: device-cos-settings/observe-device-cos-settings
 
 hooks:
   configure:
@@ -38,6 +42,10 @@ hooks:
   connect-plug-configuration-read:
     plugs: [network]
   connect-plug-rob-cos-common-write:
+    plugs: [network]
+  connect-plug-device-cos-settings-observe:
+    plugs: [network]
+  observe-view-device-cos-settings-observe:
     plugs: [network]
   remove:
     plugs: [network, home, configuration-read]
@@ -60,4 +68,4 @@ apps:
     plugs: [network, rob-cos-common-write, configuration-read, home]
   cos-registration-agent:
     command: bin/cos-registration-agent
-    plugs: [network, rob-cos-common-write, configuration-read, home]
+    plugs: [network, rob-cos-common-write, configuration-read, device-cos-settings-observe, home]

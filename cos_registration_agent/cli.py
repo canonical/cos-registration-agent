@@ -7,6 +7,7 @@ from pathlib import Path
 import configargparse
 from configargparse import ArgumentParser
 
+from cos_registration_agent.confdb_utils import get_rob_cos_base_url
 from cos_registration_agent.cos_registration_agent import CosRegistrationAgent
 from cos_registration_agent.machine_id import get_machine_id
 from cos_registration_agent.machine_ip_address import get_machine_ip_address
@@ -223,6 +224,16 @@ def main():
         device_id = get_machine_id()
 
     logger.debug(f"Device id: {device_id}")
+
+    # Try to get URL from confdb first, fall back to args
+    if not args.url:
+        confdb_url = get_rob_cos_base_url()
+        if confdb_url:
+            logger.info(f"Using COS URL from confdb: {confdb_url}")
+            args.url = confdb_url
+        else:
+            logger.error("No COS URL provided via --url or confdb")
+            return
 
     device_ip_address = get_machine_ip_address(args.url)
     logger.debug(f"Device ip address: {device_ip_address}")

@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+# This hook is triggered when the device-cos-settings-observe plug is connected
+logger -t ${SNAP_NAME} "Device COS settings confdb plug connected"

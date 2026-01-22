@@ -599,7 +599,7 @@ class TestCosRegistrationAgent(unittest.TestCase):
             status=200,
         )
 
-        result = agent.poll_for_certificate(timeout_seconds=120)
+        result = agent.poll_for_certificate(timeout_seconds=2)
 
         self.assertTrue(result)
         mock_store_certificate.assert_called_once_with(
@@ -624,9 +624,10 @@ class TestCosRegistrationAgent(unittest.TestCase):
             status=200,
         )
 
-        result = agent.poll_for_certificate(timeout_seconds=120)
+        with self.assertRaises(PermissionError) as context:
+            agent.poll_for_certificate(timeout_seconds=2)
 
-        self.assertFalse(result)
+        self.assertIn("denied by the server", str(context.exception))
 
     @patch("time.sleep", return_value=None)
     def test_poll_for_certificate_not_found(self, mock_sleep):
@@ -645,9 +646,12 @@ class TestCosRegistrationAgent(unittest.TestCase):
             status=404,
         )
 
-        result = agent.poll_for_certificate(timeout_seconds=120)
+        with self.assertRaises(FileNotFoundError) as context:
+            agent.poll_for_certificate(timeout_seconds=2)
 
-        self.assertFalse(result)
+        self.assertIn(
+            "Certificate for device not found", str(context.exception)
+        )
 
     @patch("cos_registration_agent.cos_registration_agent.store_certificate")
     @patch("time.sleep", return_value=None)
@@ -688,7 +692,6 @@ class TestCosRegistrationAgent(unittest.TestCase):
         signed_cert = (
             "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----"
         )
-
         # First call returns pending, second returns signed
         self.r_mock.get(
             self.server_url
@@ -711,9 +714,10 @@ class TestCosRegistrationAgent(unittest.TestCase):
             status=200,
         )
 
-        result = agent.poll_for_certificate(timeout_seconds=120)
+        result = agent.poll_for_certificate(timeout_seconds=2)
 
         self.assertTrue(result)
+        mock_sleep.assert_called()
         mock_store_certificate.assert_called_once_with(
             signed_cert, "/test/certs"
         )

@@ -278,18 +278,31 @@ def main():
                 return
 
             if args.generate_device_tls_certificate:
-                if cos_registration_agent.request_device_tls_certificate(
+                if not cos_registration_agent.request_device_tls_certificate(
                     device_ip_address
                 ):
-                    logger.info("Starting certificate polling...")
-                    if not cos_registration_agent.poll_for_certificate(
-                        timeout_seconds=600
-                    ):
-                        logger.error(
-                            "Failed to obtain signed certificate within timeout."
-                        )
-                else:
                     logger.error("Failed to submit CSR.")
+                    cos_registration_agent.delete_device()
+                    return
+
+                success = False
+                try:
+                    logger.info("Starting certificate polling...")
+                    success = cos_registration_agent.poll_for_certificate(
+                        timeout_seconds=600
+                    )
+                    if not success:
+                        logger.error(
+                            "Timeout: failed to obtain signed certificate"
+                        )
+                except PermissionError as e:
+                    logger.error(f"CSR denied by the server: {e}")
+                except Exception as e:
+                    logger.exception("An unexpected error occurred")
+                finally:
+                    if not success:
+                        cos_registration_agent.delete_device()
+                        return
 
             ssh_key_manager.write_keys(
                 private_ssh_key, public_ssh_key, folder=args.shared_data_path
@@ -338,19 +351,6 @@ def main():
                     rule_files_path=args.prometheus_alert_rule_files,
                     application="prometheus",
                 )
-            if args.generate_device_tls_certificate:
-                if cos_registration_agent.request_device_tls_certificate(
-                    device_ip_address
-                ):
-                    logger.info("Starting certificate polling...")
-                    if not cos_registration_agent.poll_for_certificate(
-                        timeout_seconds=600
-                    ):
-                        logger.error(
-                            "Failed to obtain signed certificate within timeout."
-                        )
-                else:
-                    logger.error("Failed to submit CSR.")
             cos_registration_agent.patch_device(data_to_update)
         elif args.action == "delete":
             cos_registration_agent.delete_device()

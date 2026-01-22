@@ -1,6 +1,6 @@
 import unittest
-from unittest.mock import patch, MagicMock, Mock
-import os
+from unittest.mock import patch
+import ipaddress
 
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography import x509
@@ -21,6 +21,11 @@ class TestGeneratePrivateKey(unittest.TestCase):
         self.assertIsInstance(private_key, rsa.RSAPrivateKey)
         self.assertEqual(private_key.key_size, 4096)
 
+        second_private_key = generate_private_key()
+        self.assertNotEqual(
+            private_key.private_numbers(), second_private_key.private_numbers()
+        )
+
 
 class TestGenerateCSR(unittest.TestCase):
     def test_generates_valid_csr(self):
@@ -40,9 +45,6 @@ class TestGenerateCSR(unittest.TestCase):
         csr = x509.load_pem_x509_csr(csr_pem.encode("utf-8"))
         cn = csr.subject.get_attributes_for_oid(x509.NameOID.COMMON_NAME)[0]
         self.assertEqual(cn.value, common_name)
-
-        # Verify SAN contains the IP address
-        import ipaddress
 
         san_ext = csr.extensions.get_extension_for_class(
             x509.SubjectAlternativeName

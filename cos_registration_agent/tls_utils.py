@@ -1,5 +1,6 @@
 """Module to handle device TLS certificates."""
 
+import ipaddress
 import logging
 import os
 
@@ -46,9 +47,6 @@ def generate_csr(
         ]
     )
 
-    # Add Subject Alternative Name (SAN) with device IP
-    import ipaddress
-
     san = x509.SubjectAlternativeName(
         [x509.IPAddress(ipaddress.ip_address(device_ip))]
     )
@@ -71,6 +69,9 @@ def store_private_key(private_key: rsa.RSAPrivateKey, certs_dir: str) -> None:
     Args:
         private_key: The private key to store.
         certs_dir: Directory to save the private key into.
+    Raises:
+        OSError: If there is an error creating the directory
+            or writing the file.
     """
     try:
         os.makedirs(certs_dir, exist_ok=True)
@@ -94,6 +95,10 @@ def store_certificate(certificate: str, certs_dir: str) -> None:
     Args:
         certificate: The signed certificate as PEM string.
         certs_dir: Directory to save the certificate into.
+    Raises:
+        RuntimeError: If no certificate is provided.
+        OSError: If there is an error creating the directory
+            or writing the file.
     """
     if not certificate:
         raise RuntimeError("No certificate provided")

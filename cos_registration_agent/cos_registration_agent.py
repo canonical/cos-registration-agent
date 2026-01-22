@@ -113,9 +113,14 @@ class CosRegistrationAgent:
         self.devices_endpoint = "devices/"
         self.applications_endpoint = "applications/"
         self.health_endpoint = "health/"
+        self.certificate_endpoint = "certificate/"
         self.device_id_endpoint = urljoin(
             self.devices_endpoint, self.device_id + "/"
         )
+        self.device_certificates_endpoint = urljoin(
+            self.device_id_endpoint, self.certificate_endpoint
+        )
+
         self.certs_dir = certs_dir
 
         server_health_status = self.cos_client.get(self.health_endpoint)
@@ -413,7 +418,7 @@ class CosRegistrationAgent:
         return rule_file_id_endpoint
 
     def request_device_tls_certificate(self, device_ip: str) -> bool:
-        """Generate private key, store it, generate CSR and submit to server.
+        """Generate and store a private key, then submit a CSR to the server.
 
         Args:
             device_ip: The IP address of the device to include in CSR SAN.
@@ -438,10 +443,11 @@ class CosRegistrationAgent:
             private_key, common_name=self.device_id, device_ip=device_ip
         )
 
-        tls_certs_url = urljoin(self.device_id_endpoint, "certificate/")
         payload = {"csr": csr_pem_str}
         try:
-            response = self.cos_client.post(tls_certs_url, data=payload)
+            response = self.cos_client.post(
+                self.device_certificates_endpoint, data=payload
+            )
             if response.status_code == 202:
                 logger.info("CSR submitted successfully.")
                 return True
@@ -455,6 +461,61 @@ class CosRegistrationAgent:
             logger.error(f"Error submitting CSR: {e}")
             return False
 
+    def _get_certificate_data(self, device_certificates_endpoint: str) -> dict:
+        """
+        Retrieve certificate data from the COS Registration server.
+
+        Args:
+            device_certificates_endpoint(str): the endpoint
+                to get the certificate data.
+
+        Raises:
+            FileNotFoundError: If the certificate for the device is not found.
+            requests.exceptions.HTTPError: For other HTTP errors.
+        """
+        response = self.cos_client.get(device_certificates_endpoint)
+        if response.status_code == 200:
+            return response.json()
+        elif response.status_code == 404:
+            raise FileNotFoundError("Certificate for device not found.")
+        else:
+            raise requests.exceptions.HTTPError(
+                f"Failed to retrieve certificate data. \
+                Status code: {response.status_code}"
+            )
+
+    def _process_certificate_response(self, certificate_data: dict) -> bool:
+        """
+        Process the certificate response data.
+
+        Args:
+            certificate_data(dict): The data retrieved from the server.
+        Returns:
+            bool: True if the certificate was stored, False otherwise.
+        Raises:
+            PermissionError: If the CSR was denied by the server.
+        """
+        status = certificate_data.get("status")
+
+        if status == "signed":
+            chain = certificate_data.get("chain")
+            if not chain:
+                logger.error("Status signed but missing certificate chain.")
+                return False
+
+            store_certificate(chain, self.certs_dir)
+            return True
+
+        if status == "denied":
+            raise PermissionError("CSR was denied by the server.")
+
+        if status == "pending":
+            logger.info("Certificate still pending...")
+            return False
+
+        logger.warning(f"Unknown status received: {status}")
+        return False
+
     def poll_for_certificate(self, timeout_seconds: int = 600) -> bool:
         """Poll the server for the signed certificate.
 
@@ -466,78 +527,28 @@ class CosRegistrationAgent:
             bool: True if certificate was successfully received and
                 stored, False otherwise.
         """
-        logger.info("Polling for signed certificate...")
-        start_time = time.time()
-        interval = 60  # Poll every 60 seconds
-
-        tls_certs_url = urljoin(self.device_id_endpoint, "certificate/")
-
         logger.info(
             f"Starting certificate polling "
             f"(timeout: {timeout_seconds} seconds)..."
         )
 
-        while True:
-            elapsed_time = time.time() - start_time
-            if elapsed_time > timeout_seconds:
-                logger.error(
-                    "Timeout reached: Certificate was not signed within "
-                    f"{timeout_seconds} seconds."
-                )
-                return False
-
+        start_time = time.time()
+        interval = 60  # Poll every 60 seconds
+        while time.time() < start_time + timeout_seconds:
             try:
-                response = self.cos_client.get(tls_certs_url)
-
-                if response.status_code == 404:
-                    logger.error("Error: Device or CSR not found.")
-                    return False
-
-                if response.status_code != 200:
-                    logger.warning(
-                        f"Unexpected status code: {response.status_code}"
-                    )
-                    time.sleep(interval)
-                    continue
-
-                data = response.json()
-                status = data.get("status")
-
-                if status == "signed":
-                    # Since this is a leaf certificate, we have to install the
-                    # full chain of certficates.
-                    certificate = data.get("chain")
-                    if not certificate:
-                        logger.error(
-                            "Certificate status is 'signed' but no "
-                            "certificate found in response."
-                        )
-                        return False
-
-                    if not self.certs_dir:
-                        logger.error("Certs directory not configured.")
-                        return False
-
-                    store_certificate(certificate, self.certs_dir)
-                    logger.info(
-                        "Certificate successfully received and stored."
-                    )
-                    return True
-
-                elif status == "denied":
-                    logger.error("Error: CSR was denied by the server.")
-                    return False
-
-                elif status == "pending":
-                    logger.info(
-                        f"Certificate still pending... "
-                        f"waiting {interval} seconds."
-                    )
-
-                else:
-                    logger.warning(f"Unknown status: {status}")
-
+                certificate_data = self._get_certificate_data(
+                    self.device_certificates_endpoint
+                )
+                if certificate_data:
+                    if self._process_certificate_response(certificate_data):
+                        return True
             except requests.RequestException as e:
                 logger.error(f"Error while polling for certificate: {e}")
 
             time.sleep(interval)
+
+        logger.error(
+            "Timeout reached: Certificate was not signed within "
+            f"{timeout_seconds} seconds."
+        )
+        return False

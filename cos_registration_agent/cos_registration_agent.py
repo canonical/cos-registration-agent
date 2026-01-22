@@ -431,25 +431,21 @@ class CosRegistrationAgent:
             return False
 
         logger.info("Generating private key and CSR...")
+
         private_key = generate_private_key()
-
-        try:
-            store_private_key(private_key, self.certs_dir)
-        except OSError as e:
-            logger.error(f"Failed to store private key: {e}")
-            return False
-
         csr_pem_str = generate_csr(
             private_key, common_name=self.device_id, device_ip=device_ip
         )
 
-        payload = {"csr": csr_pem_str}
         try:
             response = self.cos_client.post(
-                self.device_certificates_endpoint, data=payload
+                self.device_certificates_endpoint, data={"csr": csr_pem_str}
             )
             if response.status_code == 202:
-                logger.info("CSR submitted successfully.")
+                logger.info(
+                    "CSR submitted successfully," "storing the private key."
+                )
+                store_private_key(private_key, self.certs_dir)
                 return True
             else:
                 logger.error(
@@ -457,8 +453,8 @@ class CosRegistrationAgent:
                     f"Response: {response.text}"
                 )
                 return False
-        except requests.RequestException as e:
-            logger.error(f"Error submitting CSR: {e}")
+        except (requests.RequestException, OSError) as e:
+            logger.error(f"Certificate request failed: {e}")
             return False
 
     def _get_certificate_data(self, device_certificates_endpoint: str) -> dict:

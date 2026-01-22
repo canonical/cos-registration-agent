@@ -197,7 +197,16 @@ def _parse_args() -> ArgumentParser.parse_args:
     return parser.parse_args()
 
 
-def handle_tls_certificate_polling(cos_registration_agent, device_ip_address):
+def handle_tls_certificate_polling(
+    cos_registration_agent, device_ip_address
+) -> None:
+    """
+    Handle the TLS certificate polling process.
+
+    Args:
+        cos_registration_agent: An instance of CosRegistrationAgent.
+        device_ip_address: The IP address of the device.
+    """
     logger = logging.getLogger(__name__)
     if not cos_registration_agent.request_device_tls_certificate(
         device_ip_address

@@ -552,3 +552,14 @@ class CosRegistrationAgent:
             f"{timeout_seconds} seconds."
         )
         raise TimeoutError("Timeout: failed to obtain signed certificate.")
+
+    def is_device_certificate_signed(self) -> bool:
+        """Check if the device TLS certificate is signed.
+
+        Returns:
+            bool: True if the certificate is signed, False otherwise.
+        """
+        certificate_data = self._get_certificate_data(
+            self.device_certificates_endpoint
+        )
+        return certificate_data.get("status") == "signed"

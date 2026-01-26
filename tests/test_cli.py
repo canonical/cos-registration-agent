@@ -164,10 +164,14 @@ class TestCli(unittest.TestCase):
 
     @patch("cos_registration_agent.cli.CosRegistrationAgent")
     @patch("cos_registration_agent.cli.get_machine_ip_address")
-    def test_update_tls_certificates(
+    def test_update_tls_certificate_when_not_signed(
         self, mock_get_machine_ip, MockCosRegistrationAgent
     ):
+        """Test that update requests a new certificate when none is signed."""
         mock_cos_registration_agent = MockCosRegistrationAgent.return_value
+        mock_cos_registration_agent.is_device_certificate_signed.return_value = (
+            False
+        )
         self.robot_ip = "4.3.2.1"
         mock_get_machine_ip.return_value = self.robot_ip
         update_args = ["update"]
@@ -178,8 +182,33 @@ class TestCli(unittest.TestCase):
         sys.argv.extend(update_args)
         cli.main()
 
+        mock_cos_registration_agent.is_device_certificate_signed.assert_called_once()
         mock_cos_registration_agent.request_device_tls_certificate.assert_called()
         mock_cos_registration_agent.poll_for_certificate.assert_called()
+
+    @patch("cos_registration_agent.cli.CosRegistrationAgent")
+    @patch("cos_registration_agent.cli.get_machine_ip_address")
+    def test_update_tls_certificate_when_already_signed(
+        self, mock_get_machine_ip, MockCosRegistrationAgent
+    ):
+        """Test that update skips certificate request when already signed."""
+        mock_cos_registration_agent = MockCosRegistrationAgent.return_value
+        mock_cos_registration_agent.is_device_certificate_signed.return_value = (
+            True
+        )
+        self.robot_ip = "4.3.2.1"
+        mock_get_machine_ip.return_value = self.robot_ip
+        update_args = ["update"]
+        update_args.extend(self.robot_uid_args)
+        update_args.extend(self.server_url_args)
+        update_args.extend(["--generate-device-tls-certificate"])
+        sys.argv.extend(self.generic_args)
+        sys.argv.extend(update_args)
+        cli.main()
+
+        mock_cos_registration_agent.is_device_certificate_signed.assert_called_once()
+        mock_cos_registration_agent.request_device_tls_certificate.assert_not_called()
+        mock_cos_registration_agent.poll_for_certificate.assert_not_called()
 
     @patch("cos_registration_agent.cli.CosRegistrationAgent")
     @patch("cos_registration_agent.cli.get_machine_ip_address")

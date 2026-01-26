@@ -371,9 +371,11 @@ def main():
             cos_registration_agent.patch_device(data_to_update)
 
             if args.generate_device_tls_certificate:
-                handle_tls_certificate_polling(
-                    cos_registration_agent, device_ip_address
-                )
+                if not cos_registration_agent.is_device_certificate_signed():
+                    handle_tls_certificate_polling(
+                        cos_registration_agent, device_ip_address
+                    )
+
         elif args.action == "delete":
             cos_registration_agent.delete_device()
 

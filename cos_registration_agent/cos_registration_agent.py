@@ -109,7 +109,7 @@ class CosRegistrationAgent:
         server_health_status = self.cos_client.get(self.health_endpoint)
         if not server_health_status.status_code == 200:
             error_message = "COS registration server health check failed, \
-                    make sure the server is reachable"
+                    make sure the server is reachable "+cos_server_url+self.health_endpoint
             logger.error(error_message)
             raise RuntimeError(error_message)
 

@@ -53,3 +53,32 @@ def get_rob_cos_base_url() -> Optional[str]:
     if data:
         return data.get("rob-cos-base-url")
     return None
+
+
+def get_cos_registration_url() -> Optional[str]:
+    """Get complete COS registration URL from confdb.
+    
+    Combines rob-cos-base-url and registration-server-endpoint.
+
+    Returns:
+    - str: The complete registration URL, or None if not available.
+    """
+    data = get_confdb_value(":device-cos-settings-observe")
+    if not data:
+        return None
+    
+    base_url = data.get("rob-cos-base-url")
+    endpoint = data.get("registration-server-endpoint", "")
+    
+    if not base_url:
+        return None
+    
+    # Ensure base_url doesn't end with / and endpoint doesn't start with /
+    base_url = base_url.rstrip("/")
+    endpoint = endpoint.lstrip("/")
+    
+    # Combine the URL parts
+    if endpoint:
+        return f"{base_url}{endpoint}/"
+    else:
+        return f"{base_url}/"

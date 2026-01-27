@@ -7,7 +7,7 @@ description: |
   the robot to the COS server as well as uploading robot 
   specific data to the server (dashboard, UID, etc).
 
-grade: devel
+grade: stable
 confinement: strict
 
 slots:

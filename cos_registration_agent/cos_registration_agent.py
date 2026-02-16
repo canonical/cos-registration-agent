@@ -2,12 +2,20 @@
 
 import json
 import logging
+import time
 from pathlib import Path
 from posixpath import join as urljoin
-from typing import Any, Optional, Set, Tuple, Union
+from typing import Any, Optional, Set, Union
 
 import requests
 import yaml
+
+from cos_registration_agent.tls_utils import (
+    generate_csr,
+    generate_private_key,
+    store_certificate,
+    store_private_key,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +39,9 @@ class CosRegistrationServerClient:
     """COS registration server HTTP client."""
 
     def __init__(
-        self, cos_server_url: str, bearer_token: Optional[str] = None
+        self,
+        cos_server_url: str,
+        bearer_token: Optional[str] = None,
     ):
         """Init COS Registration server client."""
         self.cos_server_url = urljoin(cos_server_url, API_VERSION)
@@ -93,6 +103,7 @@ class CosRegistrationAgent:
         cos_server_url: str,
         device_id: str,
         token_file: Optional[Path] = None,
+        certs_dir: Optional[str] = None,
     ):
         """Init COS registration agent."""
         self.cos_client = CosRegistrationServerClient(
@@ -102,9 +113,15 @@ class CosRegistrationAgent:
         self.devices_endpoint = "devices/"
         self.applications_endpoint = "applications/"
         self.health_endpoint = "health/"
+        self.certificate_endpoint = "certificate/"
         self.device_id_endpoint = urljoin(
             self.devices_endpoint, self.device_id + "/"
         )
+        self.device_certificates_endpoint = urljoin(
+            self.device_id_endpoint, self.certificate_endpoint
+        )
+
+        self.certs_dir = certs_dir
 
         server_health_status = self.cos_client.get(self.health_endpoint)
         if not server_health_status.status_code == 200:
@@ -400,28 +417,149 @@ class CosRegistrationAgent:
         )
         return rule_file_id_endpoint
 
-    def get_device_tls_certificate(self) -> Optional[Tuple[str, str]]:
-        """Retrieve device tls cert and key from the COS registration server.
+    def request_device_tls_certificate(self, device_ip: str) -> bool:
+        """Generate and store a private key, then submit a CSR to the server.
 
         Args:
-        - device_uid(str): the device uid.
+            device_ip: The IP address of the device to include in CSR SAN.
+
+        Returns:
+            bool: True if CSR was successfully submitted, False otherwise.
         """
-        tls_certs_url = urljoin(self.device_id_endpoint, "certificate")
-        response = self.cos_client.get(tls_certs_url)
-        if response.status_code == 200:
-            data = response.json()
-            cert = data.get("certificate")
-            key = data.get("private_key")
-            return cert, key
-        elif response.status_code == 404:
-            logger.error(
-                f"Could not retrieve device \
-                         TLS certificate and key at \
-                         {tls_certs_url}"
+        if not self.certs_dir:
+            logger.error("Certs directory not configured.")
+            return False
+
+        logger.info("Generating private key and CSR...")
+
+        private_key = generate_private_key()
+        csr_pem_str = generate_csr(
+            private_key, common_name=self.device_id, device_ip=device_ip
+        )
+
+        try:
+            response = self.cos_client.post(
+                self.device_certificates_endpoint, data={"csr": csr_pem_str}
             )
-            return None
+            if response.status_code == 202:
+                logger.info(
+                    "CSR submitted successfully," "storing the private key."
+                )
+                store_private_key(private_key, self.certs_dir)
+                return True
+            else:
+                logger.error(
+                    f"Failed to submit CSR. Status: {response.status_code}, "
+                    f"Response: {response.text}"
+                )
+                return False
+        except (requests.RequestException, OSError) as e:
+            logger.error(f"Certificate request failed: {e}")
+            return False
+
+    def _get_certificate_data(self, device_certificates_endpoint: str) -> dict:
+        """
+        Retrieve certificate data from the COS Registration server.
+
+        Args:
+            device_certificates_endpoint(str): the endpoint
+                to get the certificate data.
+
+        Raises:
+            FileNotFoundError: If the certificate for the device is not found.
+            requests.exceptions.HTTPError: For other HTTP errors.
+        """
+        response = self.cos_client.get(device_certificates_endpoint)
+        if response.status_code == 200:
+            return response.json()
+        elif response.status_code == 404:
+            raise FileNotFoundError("Certificate for device not found.")
         else:
-            raise FileNotFoundError(
-                f"Failed to retrieve device TLS certificate data. \
+            raise requests.exceptions.HTTPError(
+                f"Failed to retrieve certificate data. \
                 Status code: {response.status_code}"
             )
+
+    def _process_certificate_response(self, certificate_data: dict) -> bool:
+        """
+        Process the certificate response data.
+
+        Args:
+            certificate_data(dict): The data retrieved from the server.
+        Returns:
+            bool: True if the certificate was stored, False otherwise.
+        Raises:
+            RuntimeError: If certs directory is not configured.
+            PermissionError: If the CSR was denied by the server.
+        """
+        status = certificate_data.get("status")
+
+        if status == "signed":
+            chain = certificate_data.get("chain")
+            if not chain:
+                logger.error("Status signed but missing certificate chain.")
+                return False
+
+            if not self.certs_dir:
+                raise RuntimeError("Certs directory not configured.")
+
+            store_certificate(chain, self.certs_dir)
+            return True
+
+        if status == "denied":
+            raise PermissionError("CSR was denied by the server.")
+
+        if status == "pending":
+            logger.info("Certificate still pending...")
+            return False
+
+        logger.warning(f"Unknown status received: {status}")
+        return False
+
+    def poll_for_certificate(self, timeout_seconds: int = 600) -> bool:
+        """Poll the server for the signed certificate.
+
+        Args:
+            timeout_seconds: Maximum time to wait for certificate
+                (default: 600s/10min).
+
+        Returns:
+            bool: True if certificate was successfully received and
+                stored, False otherwise.
+        """
+        logger.info(
+            f"Starting certificate polling "
+            f"(timeout: {timeout_seconds} seconds)..."
+        )
+
+        start_time = time.time()
+        interval = 60  # Poll every 60 seconds
+        while time.time() < start_time + timeout_seconds:
+            try:
+                certificate_data = self._get_certificate_data(
+                    self.device_certificates_endpoint
+                )
+                if certificate_data:
+                    if self._process_certificate_response(certificate_data):
+                        return True
+            except requests.RequestException as e:
+                logger.error(f"Error while polling for certificate: {e}")
+
+            time.sleep(interval)
+
+        logger.error(
+            "Timeout reached: Certificate was not signed within "
+            f"{timeout_seconds} seconds."
+        )
+        raise TimeoutError("Timeout: failed to obtain signed certificate.")
+
+    def is_device_certificate_signed(self) -> bool:
+        """Check if the device TLS certificate is signed.
+
+        Returns:
+            bool: True if the certificate is signed, False otherwise.
+        """
+        certificate_data = self._get_certificate_data(
+            self.device_certificates_endpoint
+        )
+        return certificate_data.get("status") == "signed"

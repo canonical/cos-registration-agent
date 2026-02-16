@@ -490,8 +490,103 @@ class TestCosRegistrationAgent(unittest.TestCase):
                 "bearer my-secret-token",
             )
 
-    def test_get_tls_certificate(self):
-        agent = CosRegistrationAgent(self.server_url, self.device_uid)
+    @patch(
+        "cos_registration_agent.cos_registration_agent.generate_private_key"
+    )
+    @patch("cos_registration_agent.cos_registration_agent.generate_csr")
+    @patch("cos_registration_agent.cos_registration_agent.store_private_key")
+    def test_request_device_tls_certificate_success(
+        self,
+        mock_store_private_key,
+        mock_generate_csr,
+        mock_generate_private_key,
+    ):
+        """Test successful CSR submission with immediate private key storage."""
+        agent = CosRegistrationAgent(
+            self.server_url, self.device_uid, certs_dir="/test/certs"
+        )
+
+        mock_private_key = MagicMock()
+        mock_generate_private_key.return_value = mock_private_key
+        mock_generate_csr.return_value = "-----BEGIN CERTIFICATE REQUEST-----\ntest\n-----END CERTIFICATE REQUEST-----"
+
+        certs_dir = "/test/certs"
+        device_ip = "192.168.1.100"
+
+        self.r_mock.post(
+            self.server_url
+            + "/"
+            + API_VERSION
+            + "devices/"
+            + self.device_uid
+            + "/certificate/",
+            status=202,
+        )
+
+        result = agent.request_device_tls_certificate(device_ip)
+
+        self.assertTrue(result)
+        mock_generate_private_key.assert_called_once()
+        mock_store_private_key.assert_called_once_with(
+            mock_private_key, certs_dir
+        )
+        mock_generate_csr.assert_called_once_with(
+            mock_private_key,
+            common_name=self.device_uid,
+            device_ip=device_ip,
+        )
+        self.assertEqual(agent.certs_dir, certs_dir)
+
+    @patch(
+        "cos_registration_agent.cos_registration_agent.generate_private_key"
+    )
+    @patch("cos_registration_agent.cos_registration_agent.generate_csr")
+    @patch("cos_registration_agent.cos_registration_agent.store_private_key")
+    def test_request_device_tls_certificate_failure(
+        self,
+        mock_store_private_key,
+        mock_generate_csr,
+        mock_generate_private_key,
+    ):
+        """Test failed CSR submission with non-202 status."""
+        agent = CosRegistrationAgent(
+            self.server_url, self.device_uid, certs_dir="/test/certs"
+        )
+
+        mock_private_key = MagicMock()
+        mock_generate_private_key.return_value = mock_private_key
+        mock_generate_csr.return_value = "-----BEGIN CERTIFICATE REQUEST-----\ntest\n-----END CERTIFICATE REQUEST-----"
+
+        device_ip = "192.168.1.100"
+
+        self.r_mock.post(
+            self.server_url
+            + "/"
+            + API_VERSION
+            + "devices/"
+            + self.device_uid
+            + "/certificate/",
+            status=400,
+            body="Bad request",
+        )
+
+        result = agent.request_device_tls_certificate(device_ip)
+
+        self.assertFalse(result)
+
+    @patch("cos_registration_agent.cos_registration_agent.store_certificate")
+    @patch("time.sleep", return_value=None)  # Speed up the test
+    def test_poll_for_certificate_signed(
+        self, mock_sleep, mock_store_certificate
+    ):
+        """Test successful certificate polling when status is 'signed'."""
+        agent = CosRegistrationAgent(
+            self.server_url, self.device_uid, certs_dir="/test/certs"
+        )
+
+        signed_cert = (
+            "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----"
+        )
 
         self.r_mock.get(
             self.server_url
@@ -499,18 +594,134 @@ class TestCosRegistrationAgent(unittest.TestCase):
             + API_VERSION
             + "devices/"
             + self.device_uid
-            + "/certificate",
-            json.dumps(
-                {
-                    "certificate": "-----BEGIN CERTIFICATE-----",
-                    "private_key": "-----BEGIN PRIVATE KEY-----",
-                }
-            ),
+            + "/certificate/",
+            json={"status": "signed", "chain": signed_cert},
             status=200,
-            headers={"content-type": "application/json"},
         )
 
-        cert, key = agent.get_device_tls_certificate()
+        result = agent.poll_for_certificate(timeout_seconds=2)
 
-        self.assertTrue(cert.startswith("-----BEGIN CERTIFICATE-----"))
-        self.assertTrue(key.startswith("-----BEGIN PRIVATE KEY-----"))
+        self.assertTrue(result)
+        mock_store_certificate.assert_called_once_with(
+            signed_cert, "/test/certs"
+        )
+
+    @patch("time.sleep", return_value=None)
+    def test_poll_for_certificate_denied(self, mock_sleep):
+        """Test certificate polling when CSR is denied."""
+        agent = CosRegistrationAgent(
+            self.server_url, self.device_uid, certs_dir="/test/certs"
+        )
+
+        self.r_mock.get(
+            self.server_url
+            + "/"
+            + API_VERSION
+            + "devices/"
+            + self.device_uid
+            + "/certificate/",
+            json={"status": "denied"},
+            status=200,
+        )
+
+        with self.assertRaises(PermissionError) as context:
+            agent.poll_for_certificate(timeout_seconds=2)
+
+        self.assertIn("denied by the server", str(context.exception))
+
+    @patch("time.sleep", return_value=None)
+    def test_poll_for_certificate_not_found(self, mock_sleep):
+        """Test certificate polling when device/CSR is not found."""
+        agent = CosRegistrationAgent(
+            self.server_url, self.device_uid, certs_dir="/test/certs"
+        )
+
+        self.r_mock.get(
+            self.server_url
+            + "/"
+            + API_VERSION
+            + "devices/"
+            + self.device_uid
+            + "/certificate/",
+            status=404,
+        )
+
+        with self.assertRaises(FileNotFoundError) as context:
+            agent.poll_for_certificate(timeout_seconds=2)
+
+        self.assertIn(
+            "Certificate for device not found", str(context.exception)
+        )
+
+    @patch("cos_registration_agent.cos_registration_agent.store_certificate")
+    @patch("time.sleep", return_value=None)
+    def test_poll_for_certificate_timeout(
+        self, mock_sleep, mock_store_certificate
+    ):
+        """Test certificate polling timeout."""
+        agent = CosRegistrationAgent(
+            self.server_url, self.device_uid, certs_dir="/test/certs"
+        )
+
+        # Mock time to simulate timeout
+        call_count = [0]
+
+        def mock_time_fn():
+            call_count[0] += 1
+            return 0 if call_count[0] == 1 else 601
+
+        with patch(
+            "cos_registration_agent.cos_registration_agent.time.time",
+            side_effect=mock_time_fn,
+        ):
+            with self.assertRaises(TimeoutError) as context:
+                agent.poll_for_certificate(timeout_seconds=2)
+
+            self.assertIn(
+                "Timeout: failed to obtain signed certificate",
+                str(context.exception),
+            )
+            mock_store_certificate.assert_not_called()
+
+    @patch("cos_registration_agent.cos_registration_agent.store_certificate")
+    @patch("time.sleep", return_value=None)
+    def test_poll_for_certificate_pending_then_signed(
+        self, mock_sleep, mock_store_certificate
+    ):
+        """Test certificate polling that transitions from pending to signed."""
+        agent = CosRegistrationAgent(
+            self.server_url, self.device_uid, certs_dir="/test/certs"
+        )
+
+        signed_cert = (
+            "-----BEGIN CERTIFICATE-----\ntest\n-----END CERTIFICATE-----"
+        )
+        # First call returns pending, second returns signed
+        self.r_mock.get(
+            self.server_url
+            + "/"
+            + API_VERSION
+            + "devices/"
+            + self.device_uid
+            + "/certificate/",
+            json={"status": "pending"},
+            status=200,
+        )
+        self.r_mock.get(
+            self.server_url
+            + "/"
+            + API_VERSION
+            + "devices/"
+            + self.device_uid
+            + "/certificate/",
+            json={"status": "signed", "chain": signed_cert},
+            status=200,
+        )
+
+        result = agent.poll_for_certificate(timeout_seconds=2)
+
+        self.assertTrue(result)
+        mock_sleep.assert_called()
+        mock_store_certificate.assert_called_once_with(
+            signed_cert, "/test/certs"
+        )

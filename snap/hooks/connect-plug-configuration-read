@@ -1,3 +1,6 @@
 #!/bin/sh -e
 
-$SNAP/usr/bin/register-device.sh
+if ! $SNAP/usr/bin/register-device.sh; then
+  logger -t "${SNAP}" "device registration failed in connect-plug-configuration-read"
+  logger -t "${SNAP}" "You can try again later by running: sudo snap run ${SNAP}.force-register-device"
+fi

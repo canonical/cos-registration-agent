@@ -23,9 +23,11 @@ UUID=$(grep '^uid:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
 # Set the command args based on configuration
 CMD_ARGS=(--url "${URL}" --uid "${UUID}")
 
+GLOBAL_ARGS=()
+
 # Check if identity token exists in configuration
 if [ -f "${IDENTITY_TOKEN_FILE_PATH}" ]; then
-    CMD_ARGS+=(--token-file "${IDENTITY_TOKEN_FILE_PATH}")
+    GLOBAL_ARGS+=(--token-file "${IDENTITY_TOKEN_FILE_PATH}")
 fi
 
-"$SNAP/bin/cos-registration-agent" delete "${CMD_ARGS[@]}"
+"$SNAP/bin/cos-registration-agent" "${GLOBAL_ARGS[@]}" delete "${CMD_ARGS[@]}"

@@ -1,33 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-CONFIGURATION_FILE_PATH="${SNAP_COMMON}/configuration/device.yaml"
-IDENTITY_TOKEN_FILE_PATH="${SNAP_COMMON}/rob-cos-shared-data/identity/token.txt"
-CONFIG_PATH="$(snapctl get configuration-path)"
-
-if [ ! -f "$CONFIGURATION_FILE_PATH" ]; then
-    echo "Configuration file '$CONFIGURATION_FILE_PATH' does not exist."
-    # Use fallback configuration mechanism if the configuration-path is set
-    if [ -n "${CONFIG_PATH}" ]; then
-        CONFIGURATION_FILE_PATH="/root/${CONFIG_PATH}/device.yaml"
-        echo "Configuration-path set, device config file path is: ${CONFIGURATION_FILE_PATH}"
-    else
-        echo "No valid configuration file has been found"
-        exit 1
-    fi
+if ! $SNAP/usr/bin/delete-device.sh; then
+  logger -t "${SNAP_NAME}" "device deletion failed in remove hook"
 fi
 
-URL=$(grep '^url:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
-UUID=$(grep '^uid:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
-
-# Set the command args based on configuration
-CMD_ARGS=(--url "${URL}" --uid "${UUID}")
-
-GLOBAL_ARGS=()
-
-# Check if identity token exists in configuration
-if [ -f "${IDENTITY_TOKEN_FILE_PATH}" ]; then
-    GLOBAL_ARGS+=(--token-file "${IDENTITY_TOKEN_FILE_PATH}")
-fi
-
-"$SNAP/bin/cos-registration-agent" "${GLOBAL_ARGS[@]}" delete "${CMD_ARGS[@]}"

@@ -58,7 +58,7 @@ apps:
     daemon: oneshot
     install-mode: disable
     plugs: [network, rob-cos-common-write, configuration-read, home]
-  force-register-device:
+  register-device:
     command: usr/bin/register-device.sh
     daemon: oneshot
     install-mode: disable

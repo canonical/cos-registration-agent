@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
-if ! $SNAP/usr/bin/delete-device.sh; then
+if ! "${SNAP}/usr/bin/delete-device.sh"; then
   logger -t "${SNAP_NAME}" "device deletion failed in remove hook"
+  exit 1
 fi
 

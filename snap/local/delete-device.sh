@@ -32,3 +32,5 @@ fi
 
 "$SNAP/bin/cos-registration-agent" "${GLOBAL_ARGS[@]}" delete "${CMD_ARGS[@]}"
 
+logger -t ${SNAP_NAME} "Successfully deleted the device."
+

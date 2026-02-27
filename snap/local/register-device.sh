@@ -48,4 +48,6 @@ fi
 # Call the registration command with the args
 ${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} setup -c ${CONFIGURATION_FILE_PATH}
 
+logger -t ${SNAP_NAME} "Successfully registered the device."
+
 snapctl start --enable ${SNAP_NAME}.update-device-configuration 2>&1

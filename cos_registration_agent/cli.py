@@ -7,7 +7,10 @@ from pathlib import Path
 import configargparse
 from configargparse import ArgumentParser
 
-from cos_registration_agent.confdb_utils import get_cos_registration_url
+from cos_registration_agent.confdb_utils import (
+    get_cos_registration_url,
+    get_device_uid,
+)
 from cos_registration_agent.cos_registration_agent import CosRegistrationAgent
 from cos_registration_agent.machine_id import get_machine_id
 from cos_registration_agent.machine_ip_address import get_machine_ip_address
@@ -206,6 +209,20 @@ def main():
     if args.log_level:
         logging.basicConfig(level=getattr(logging, args.log_level))
 
+    # Try to get device UID from confdb first, then from args, finally from machine-id
+    confdb_device_uid = get_device_uid()
+    if confdb_device_uid:
+        logger.info(f"Using device UID from confdb: {confdb_device_uid}")
+        device_id = confdb_device_uid
+    elif args.uid:
+        logger.info(f"Using device UID from command line argument: {args.uid}")
+        device_id = args.uid
+    else:
+        logger.info("Using device UID from machine-id")
+        device_id = get_machine_id()
+
+    logger.debug(f"Device id: {device_id}")
+
     if args.action == "write-uid":
         try:
             write_data(
@@ -217,13 +234,6 @@ def main():
         except Exception as e:
             logger.error(f"Failed to {args.action}: {e}")
             return
-
-    if args.uid:
-        device_id = args.uid
-    else:
-        device_id = get_machine_id()
-
-    logger.debug(f"Device id: {device_id}")
 
     # Try to get URL from confdb first, fall back to args
     confdb_url = get_cos_registration_url()

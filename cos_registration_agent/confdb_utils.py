@@ -43,35 +43,85 @@ def get_confdb_value(view: str, key: Optional[str] = None) -> Optional[dict]:
         return None
 
 
-def get_rob_cos_base_url() -> Optional[str]:
-    """Get rob-cos-base-url from confdb.
+def get_rob_cos_ip() -> Optional[str]:
+    """Get rob-cos-ip from confdb.
 
     Returns:
-    - str: The base URL, or None if not available.
+    - str: The COS IP/hostname, or None if not available.
     """
     data = get_confdb_value(":device-cos-settings-observe")
     if data:
-        return data.get("rob-cos-base-url")
+        return data.get("rob-cos-ip")
+    return None
+
+
+def get_model_name() -> Optional[str]:
+    """Get model name from confdb.
+
+    Returns:
+    - str: The model name, or None if not available.
+    """
+    data = get_confdb_value(":device-cos-settings-observe")
+    if data:
+        return data.get("model-name")
+    return None
+
+
+def get_rob_cos_base_url() -> Optional[str]:
+    """Get rob-cos-base-url computed from rob-cos-ip and model-name.
+    
+    Computes the base URL by combining rob-cos-ip and model-name:
+    http://{rob-cos-ip}/{model-name}
+
+    Returns:
+    - str: The computed base URL, or None if components not available.
+    """
+    data = get_confdb_value(":device-cos-settings-observe")
+    if not data:
+        return None
+    
+    rob_cos_ip = data.get("rob-cos-ip")
+    model_name = data.get("model-name")
+    
+    # Skip if either is missing or still a placeholder
+    if not rob_cos_ip or rob_cos_ip == "rob-cos-ip-placeholder":
+        return None
+    if not model_name or model_name == "model-name-placeholder":
+        return None
+    
+    # Construct the base URL: http://ip/model-name
+    return f"http://{rob_cos_ip}/{model_name}"
+
+
+def get_device_uid() -> Optional[str]:
+    """Get device UID from confdb.
+
+    Returns:
+    - str: The device UID, or None if not available.
+    """
+    data = get_confdb_value(":device-cos-settings-observe")
+    if data:
+        return data.get("device-uid")
     return None
 
 
 def get_cos_registration_url() -> Optional[str]:
     """Get complete COS registration URL from confdb.
     
-    Combines rob-cos-base-url and registration-server-endpoint.
+    Computes base URL from rob-cos-ip and model-name, then combines with
+    registration-server-endpoint.
 
     Returns:
     - str: The complete registration URL, or None if not available.
     """
-    data = get_confdb_value(":device-cos-settings-observe")
-    if not data:
-        return None
-    
-    base_url = data.get("rob-cos-base-url")
-    endpoint = data.get("registration-server-endpoint", "")
-    
+    # Get the computed base URL
+    base_url = get_rob_cos_base_url()
     if not base_url:
         return None
+    
+    # Get endpoint from confdb
+    data = get_confdb_value(":device-cos-settings-observe")
+    endpoint = data.get("registration-server-endpoint", "") if data else ""
     
     # Ensure base_url doesn't end with / and endpoint doesn't start with /
     base_url = base_url.rstrip("/")

@@ -4,20 +4,44 @@ CONFIGURATION_FILE_PATH="${SNAP_COMMON}/configuration/device.yaml"
 IDENTITY_TOKEN_FILE_PATH="${SNAP_COMMON}/rob-cos-shared-data/identity/token.txt"
 CONFIG_PATH="$(snapctl get configuration-path)"
 
-if [ ! -f "$CONFIGURATION_FILE_PATH" ]; then
-    echo "Configuration file '$CONFIGURATION_FILE_PATH' does not exist."
-    # Use fallback configuration mechanism if the configuration-path is set
-    if [ -n "${CONFIG_PATH}" ]; then
-        CONFIGURATION_FILE_PATH="/root/${CONFIG_PATH}/device.yaml"
-        echo "Configuration-path set, device config file path is: ${CONFIGURATION_FILE_PATH}"
-    else
-        echo "No valid configuration file has been found"
-        exit 1
+# Try to get device UID from confdb first
+UUID=$(snapctl get --view :device-cos-settings-observe device-uid 2>/dev/null || echo "")
+
+# If not in confdb, try to read from configuration file
+if [ -z "$UUID" ]; then
+    if [ ! -f "$CONFIGURATION_FILE_PATH" ]; then
+        echo "Configuration file '$CONFIGURATION_FILE_PATH' does not exist."
+        # Use fallback configuration mechanism if the configuration-path is set
+        if [ -n "${CONFIG_PATH}" ]; then
+            CONFIGURATION_FILE_PATH="/root/${CONFIG_PATH}/device.yaml"
+            echo "Configuration-path set, device config file path is: ${CONFIGURATION_FILE_PATH}"
+        else
+            echo "No valid configuration file has been found and no device-uid in confdb"
+            exit 1
+        fi
     fi
+    
+    UUID=$(grep '^uid:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
 fi
 
-URL=$(grep '^url:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
-UUID=$(grep '^uid:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
+# Try to get URL from confdb by computing it from rob-cos-ip and model-name
+ROB_COS_IP=$(snapctl get --view :device-cos-settings-observe rob-cos-ip 2>/dev/null || echo "")
+MODEL_NAME=$(snapctl get --view :device-cos-settings-observe model-name 2>/dev/null || echo "")
+
+if [ -n "$ROB_COS_IP" ] && [ "$ROB_COS_IP" != "rob-cos-ip-placeholder" ] && \
+   [ -n "$MODEL_NAME" ] && [ "$MODEL_NAME" != "model-name-placeholder" ]; then
+    URL="http://${ROB_COS_IP}/${MODEL_NAME}"
+elif [ -f "$CONFIGURATION_FILE_PATH" ]; then
+    # Fall back to config file
+    URL=$(grep '^url:' "$CONFIGURATION_FILE_PATH" | cut -d ' ' -f 2)
+else
+    URL=""
+fi
+
+if [ -z "$URL" ] || [ -z "$UUID" ]; then
+    echo "Could not determine URL or UUID for device removal"
+    exit 1
+fi
 
 # Set the command args based on configuration
 CMD_ARGS="--url ${URL} --uid ${UUID}"

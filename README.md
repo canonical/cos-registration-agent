@@ -113,44 +113,105 @@ This environment variable does not affect the agent’s behavior when TLS is not
 
 ### Examples
 
-Setup device with custom grafana dashboard example:
-```
-cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup --url http://127.0.0.1:8000/ --grafana-dashboards /home/giuseppe/device_dashboards/grafana_dashboards  --device-grafana-dashboards my_dashboard1 my_dashboard2
+#### Using Confdb (Recommended)
 
+When connected to `rob-cos-demo-configuration`, the URL and UID are automatically read from confdb:
+
+```bash
+# Connect confdb interface (first time only)
+sudo snap connect cos-registration-agent:device-cos-settings-observe
+
+# Setup device - URL and UID from confdb
+cos-registration-agent setup
+
+# Setup with custom grafana dashboard
+cos-registration-agent setup --grafana-dashboards /home/giuseppe/device_dashboards/grafana_dashboards --device-grafana-dashboards my_dashboard1 my_dashboard2
+
+# Setup with TLS certificate generation
+cos-registration-agent setup --generate-device-tls-certificate
+
+# Update device configuration
+cos-registration-agent update
+
+# Update with dashboard changes
+cos-registration-agent update --grafana-dashboards /device_dashboards/grafana_dashboards
+
+# Update device SSH keys
+cos-registration-agent update --update-ssh-keys
+
+# Regenerate TLS certificates
+cos-registration-agent update --generate-device-tls-certificate
+
+# Delete device from COS server
+cos-registration-agent delete
 ```
 
-Setup device with generation of TLS certificates:
-```
-cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup --url http://127.0.0.1:8000/ --generate-device-tls-certificate
+#### Using Command-Line Arguments (Without Confdb)
+
+When confdb is not available, specify URL explicitly:
+
+```bash
+# Setup device with custom grafana dashboard
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup --url http://192.168.1.100:8000/production-fleet-cos-registration-server/ --grafana-dashboards /home/giuseppe/device_dashboards/grafana_dashboards --device-grafana-dashboards my_dashboard1 my_dashboard2
+
+# Setup device with generation of TLS certificates
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data setup --url http://192.168.1.100:8000/production-fleet-cos-registration-server/ --generate-device-tls-certificate
+
+# Patch grafana dashboards
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://192.168.1.100:8000/production-fleet-cos-registration-server/ --grafana-dashboards /device_dashboards/grafana_dashboards
+
+# Update device ssh keys
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://192.168.1.100:8000/production-fleet-cos-registration-server/ --update-ssh-keys
+
+# Update device with regeneration of TLS certificates
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://192.168.1.100:8000/production-fleet-cos-registration-server/ --generate-device-tls-certificate
+
+# Delete device from COS server
+cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data delete --url http://192.168.1.100:8000/production-fleet-cos-registration-server/
 ```
 
-Patch grafana dashboards:
-```
-cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://127.0.0.1:8000/ --grafana-dashboards /device_dashboards/grafana_dashboards
+## Configuration
+
+### Configuration Priority
+
+The `cos-registration-agent` supports multiple configuration sources with the following priority (highest to lowest):
+
+1. **Confdb** (via `device-cos-settings` schema) - Primary source when connected to `rob-cos-demo-configuration`
+2. **Command-line arguments** - Override confdb values
+3. **Configuration file** - Fallback when confdb is not available
+4. **Defaults** - Built-in fallback values
+
+### Confdb Integration
+
+When the snap is connected to `rob-cos-demo-configuration` via the `device-cos-settings-observe` interface, configuration is automatically read from confdb:
+
+```bash
+# Connect to confdb
+sudo snap connect cos-registration-agent:device-cos-settings-observe
+
+# Configuration is now automatically available from confdb
+# No need to specify --url or --uid flags
+cos-registration-agent setup
 ```
 
-Update device ssh keys:
-```
-cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://127.0.0.1:8000/ --update-ssh-keys
+Confdb provides:
+- **Device UID**: Auto-generated from machine-id
+- **COS Registration URL**: Computed from `rob-cos-ip` + `model-name` + `registration-server-endpoint`
+
+To check current confdb values:
+```bash
+sudo snap run --shell cos-registration-agent
+snapctl get --view :device-cos-settings-observe -d
 ```
 
-Update device with regeneration of TLS certificates:
-```
-cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data update --url http://127.0.0.1:8000/ --generate-device-tls-certificate
-```
+### Configuration File
 
-Delete device from COS server:
-```
-cos-registration-agent --shared-data-path $SNAP_COMMON/rob-cos-shared-data delete --url http://127.0.0.1:8000/
-```
+Alternatively, when confdb is not available, a configuration file can be used:
 
-## Config
-
-Alternatively a configuration file can be used instead of argument flags.
 With the following configuration file `config.yaml`:
 
-```
-url: http://cos-server/cos-robotics-model-cos-registration-server/
+```yaml
+url: http://192.168.1.100:8000/production-fleet-cos-registration-server/
 uid: my-robot-uid
 generate-device-tls-certificate: True
 grafana-dashboards: path/to_grafana_dashboards/
@@ -162,11 +223,22 @@ device-grafana-dashboards: [dashboard-1, dashboard-2]
 device-foxglove-dashboards: [dashboard-3, dashboard-4]
 device-loki-alert-rule-files: None
 device-prometheus-alert-rule-files: [alert-rule-file-1]
+```
 
-```
-Then we can call `cos-registration-agent` with:
-```
+Then call `cos-registration-agent` with:
+```bash
 cos-registration-agent --config ./config.yaml
+```
+
+### Command-Line Override
+
+Command-line arguments can override confdb values when needed:
+```bash
+# Use different URL than confdb
+cos-registration-agent --url http://test-server:8000/test-model-cos-registration-server/ setup
+
+# Use different UID than confdb
+cos-registration-agent --uid custom-device-id setup
 ```
 
 ## Development

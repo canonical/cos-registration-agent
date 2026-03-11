@@ -69,3 +69,6 @@ apps:
   cos-registration-agent:
     command: bin/cos-registration-agent
     plugs: [network, rob-cos-common-write, configuration-read, device-cos-settings-observe, home]
+  snapctl-wrapper:
+    command: usr/bin/snapctl-wrapper.sh
+    plugs: [device-cos-settings-observe]

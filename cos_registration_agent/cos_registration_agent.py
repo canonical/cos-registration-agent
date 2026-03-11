@@ -34,7 +34,10 @@ class CosRegistrationServerClient:
         self, cos_server_url: str, bearer_token: Optional[str] = None
     ):
         """Init COS Registration server client."""
+        logger.debug(f"[CosRegistrationServerClient.__init__] Input cos_server_url: {cos_server_url}")
+        logger.debug(f"[CosRegistrationServerClient.__init__] API_VERSION: {API_VERSION}")
         self.cos_server_url = urljoin(cos_server_url, API_VERSION)
+        logger.debug(f"[CosRegistrationServerClient.__init__] Final cos_server_url after urljoin: {self.cos_server_url}")
 
         self.headers = {}
         if bearer_token:
@@ -42,8 +45,10 @@ class CosRegistrationServerClient:
 
     def get(self, endpoint: str, params: Any = None) -> Any:
         """HTTP GET to the COS Registration server."""
+        full_url = urljoin(self.cos_server_url, endpoint)
+        logger.debug(f"[CosRegistrationServerClient.get] GET {full_url}")
         response = requests.get(
-            urljoin(self.cos_server_url, endpoint),
+            full_url,
             headers=self.headers,
             params=params,
             verify=False,
@@ -95,6 +100,7 @@ class CosRegistrationAgent:
         token_file: Optional[Path] = None,
     ):
         """Init COS registration agent."""
+        logger.debug(f"[CosRegistrationAgent.__init__] Initializing with cos_server_url: {cos_server_url}")
         self.cos_client = CosRegistrationServerClient(
             cos_server_url, bearer_token=_validate_token(token_file)
         )
@@ -106,7 +112,9 @@ class CosRegistrationAgent:
             self.devices_endpoint, self.device_id + "/"
         )
 
+        logger.debug(f"[CosRegistrationAgent.__init__] Checking health endpoint: {self.health_endpoint}")
         server_health_status = self.cos_client.get(self.health_endpoint)
+        logger.debug(f"[CosRegistrationAgent.__init__] Health check status code: {server_health_status.status_code}")
         if not server_health_status.status_code == 200:
             error_message = "COS registration server health check failed, \
                     make sure the server is reachable "+cos_server_url+self.health_endpoint

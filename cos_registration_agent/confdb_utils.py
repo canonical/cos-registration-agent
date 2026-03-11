@@ -78,19 +78,26 @@ def get_rob_cos_base_url() -> Optional[str]:
     """
     data = get_confdb_value(":device-cos-settings-observe")
     if not data:
+        logger.debug("[get_rob_cos_base_url] No data from confdb")
         return None
     
     rob_cos_ip = data.get("rob-cos-ip")
     model_name = data.get("model-name")
+    logger.debug(f"[get_rob_cos_base_url] rob-cos-ip from confdb: {rob_cos_ip}")
+    logger.debug(f"[get_rob_cos_base_url] model-name from confdb: {model_name}")
     
     # Skip if either is missing or still a placeholder
     if not rob_cos_ip or rob_cos_ip == "rob-cos-ip-placeholder":
+        logger.debug("[get_rob_cos_base_url] rob-cos-ip is missing or placeholder")
         return None
     if not model_name or model_name == "model-name-placeholder":
+        logger.debug("[get_rob_cos_base_url] model-name is missing or placeholder")
         return None
     
     # Construct the base URL: http://ip/model-name
-    return f"http://{rob_cos_ip}/{model_name}"
+    base_url = f"http://{rob_cos_ip}/{model_name}"
+    logger.debug(f"[get_rob_cos_base_url] computed base URL: {base_url}")
+    return base_url
 
 
 def get_device_uid() -> Optional[str]:
@@ -116,12 +123,14 @@ def get_cos_registration_url() -> Optional[str]:
     """
     # Get the computed base URL
     base_url = get_rob_cos_base_url()
+    logger.debug(f"[get_cos_registration_url] base_url from get_rob_cos_base_url(): {base_url}")
     if not base_url:
         return None
     
     # Get endpoint from confdb
     data = get_confdb_value(":device-cos-settings-observe")
     endpoint = data.get("registration-server-endpoint", "") if data else ""
+    logger.debug(f"[get_cos_registration_url] endpoint from confdb: {endpoint}")
     
     # Ensure base_url doesn't end with / and endpoint doesn't start with /
     base_url = base_url.rstrip("/")
@@ -129,6 +138,9 @@ def get_cos_registration_url() -> Optional[str]:
     
     # Combine the URL parts
     if endpoint:
-        return f"{base_url}{endpoint}/"
+        final_url = f"{base_url}{endpoint}/"
     else:
-        return f"{base_url}/"
+        final_url = f"{base_url}/"
+    
+    logger.debug(f"[get_cos_registration_url] final URL: {final_url}")
+    return final_url

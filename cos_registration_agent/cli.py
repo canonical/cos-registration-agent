@@ -245,9 +245,12 @@ def main():
             logger.error("No COS URL provided via --url or confdb")
             return
 
+    logger.debug(f"Final COS URL that will be passed to CosRegistrationAgent: {args.url}")
+    
     device_ip_address = get_machine_ip_address(args.url)
     logger.debug(f"Device ip address: {device_ip_address}")
 
+    logger.debug(f"Initializing CosRegistrationAgent with URL: {args.url}")
     cos_registration_agent = CosRegistrationAgent(
         args.url, device_id, args.token_file
     )

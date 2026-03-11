@@ -1,51 +1,56 @@
 #!/bin/sh -e
 
-CONFIGURATION_FILE_PATH="${SNAP_COMMON}/configuration/device.yaml"
+# This script registers the device with the COS server
+# Configuration is read from confdb (no config file needed)
+
 IDENTITY_TOKEN_FILE_PATH="${SNAP_COMMON}/rob-cos-shared-data/identity/token.txt"
+CONFIGURATION_DIR_PATH="${SNAP_COMMON}/configuration"
 
-if [ -n "$1" ]; then
-    CONFIGURATION_FILE_PATH="$1"
-fi
+logger -t ${SNAP_NAME} "Starting device registration (using confdb for configuration)"
 
-if [ ! -f "${CONFIGURATION_FILE_PATH}" ]; then
-    logger -t ${SNAP_NAME} "Configuration file '${CONFIGURATION_FILE_PATH}' does not exist."
-    exit 1
-fi
-
-logger -t ${SNAP_NAME} "Using configuration file: ${CONFIGURATION_FILE_PATH}."
-
-# Retrieve the directory at which the configuration is stored
-CONFIGURATION_DIR_PATH="$(dirname "${CONFIGURATION_FILE_PATH}")"
-
-# Set the registration command args based on configuration
+# Build registration command args
 REGISTRATION_CMD_ARGS=""
 
-# Check if grafan_dashboards directory exists in configuration
+# Check if grafana_dashboards directory exists in configuration
 if [ -d "${CONFIGURATION_DIR_PATH}/grafana_dashboards" ]; then
     REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --grafana-dashboards ${CONFIGURATION_DIR_PATH}/grafana_dashboards"
+    logger -t ${SNAP_NAME} "Found grafana_dashboards directory"
 fi
 
 # Check if foxglove_layouts directory exists in configuration
 if [ -d "${CONFIGURATION_DIR_PATH}/foxglove_layouts" ]; then
     REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --foxglove-studio-dashboards ${CONFIGURATION_DIR_PATH}/foxglove_layouts"
+    logger -t ${SNAP_NAME} "Found foxglove_layouts directory"
 fi
 
 # Check if loki_alert_rules directory exists in configuration
 if [ -d "${CONFIGURATION_DIR_PATH}/loki_alert_rules" ]; then
     REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --loki-alert-rule-files ${CONFIGURATION_DIR_PATH}/loki_alert_rules"
+    logger -t ${SNAP_NAME} "Found loki_alert_rules directory"
 fi
 
 # Check if prometheus_alert_rules directory exists in configuration
 if [ -d "${CONFIGURATION_DIR_PATH}/prometheus_alert_rules" ]; then
     REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --prometheus-alert-rule-files ${CONFIGURATION_DIR_PATH}/prometheus_alert_rules"
+    logger -t ${SNAP_NAME} "Found prometheus_alert_rules directory"
 fi
 
-# Check if identity token exists in configuration
+# Check if identity token exists
 if [ -f "${IDENTITY_TOKEN_FILE_PATH}" ]; then
     REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --token-file ${IDENTITY_TOKEN_FILE_PATH}"
+    logger -t ${SNAP_NAME} "Using identity token from ${IDENTITY_TOKEN_FILE_PATH}"
 fi
 
-# Call the registration command with the args
-${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} setup -c ${CONFIGURATION_FILE_PATH}
+# Call the registration command
+# Note: --url and --uid are optional; if not provided, they will be read from confdb
+# The cos-registration-agent will automatically get configuration from confdb
+logger -t ${SNAP_NAME} "Executing: cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} setup"
 
+${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} setup
+
+logger -t ${SNAP_NAME} "Device registration completed"
+
+# Enable the update-device-configuration service
 snapctl start --enable ${SNAP_NAME}.update-device-configuration 2>&1
+
+logger -t ${SNAP_NAME} "Enabled update-device-configuration service"

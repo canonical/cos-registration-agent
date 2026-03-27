@@ -83,8 +83,19 @@ device-prometheus-alert-rule-files: [low_memory]
         os.unlink(config_file)
 
 
+@pytest.mark.integration
 def test_yaml_config_parsing_from_snap():
-    """Test that device.yaml from snap is properly parsed (requires snap installed)."""
+    """Test that device.yaml from snap is properly parsed (requires snap installed).
+
+    This is an integration test that relies on external host state.
+    Run with: pytest -m integration or set RUN_INTEGRATION_TESTS=1
+    """
+
+    # Skip unless explicitly requested via marker or environment variable
+    if not os.environ.get("RUN_INTEGRATION_TESTS"):
+        pytest.skip(
+            "Skipping integration test. Set RUN_INTEGRATION_TESTS=1 or run with pytest -m integration"
+        )
 
     # Clear any existing parsers from previous tests
     configargparse._parsers.clear()

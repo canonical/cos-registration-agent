@@ -1,11 +1,7 @@
 #!/bin/sh -e
 
 # Setup logging
-LOG_FILE="${SNAP_COMMON}/hooks-log.txt"
-TIMESTAMP="$(date '+%Y-%m-%d %H:%M:%S')"
-
 log_msg() {
-    echo "${TIMESTAMP} - configure: $1" >> "${LOG_FILE}"
     logger -t "${SNAP_NAME}.configure" "$1"
 }
 
@@ -13,41 +9,10 @@ log_msg "=== Configure hook called ==="
 log_msg "SNAP_COMMON: ${SNAP_COMMON}"
 log_msg "SNAP: ${SNAP}"
 
-CONFIG_PATH="$(snapctl get configuration-path 2>&1)"
-CONFIG_PATH_EXIT=$?
-
-log_msg "snapctl get configuration-path returned: exit_code=${CONFIG_PATH_EXIT}, value='${CONFIG_PATH}'"
-
-# Use fallback configuration mechanism if the configuration-path is set
-if [ -n "${CONFIG_PATH}" ] && [ "${CONFIG_PATH_EXIT}" -eq 0 ]; then
-    log_msg "configuration-path is set: '${CONFIG_PATH}'"
-    
-    # But always give precedence to the configuration-read plug
-    if snapctl is-connected configuration-read; then
-      log_msg "ERROR: Plug 'configuration-read' is connected, configuration-path parameter will be ignored"
-      logger -t ${SNAP_NAME} "Plug 'configuration-read' is connected, \
-        the configuration-path parameter will be ignored"
-      exit 1
-    fi
-    
-    log_msg "Checking if /root/${CONFIG_PATH} exists..."
-
-    if [ ! -d "/root/${CONFIG_PATH}" ]; then
-        log_msg "ERROR: configuration-path '/root/${CONFIG_PATH}' does not exist"
-        >&2 echo "Error: configuration-path '${CONFIG_PATH}' does not exist. \
-            The path must be relative to /root."
-        logger -t ${SNAP_NAME} "Error: configuration-path '${CONFIG_PATH}' does not exist. \
-            The path must be relative to /root."
-        exit 1
-    fi
-    
-    log_msg "Calling register-device.sh with /root/${CONFIG_PATH}/device.yaml"
-    $SNAP/usr/bin/register-device.sh "/root/${CONFIG_PATH}/device.yaml"
-    log_msg "register-device.sh completed with exit code: $?"
-else
-    log_msg "configuration-path not set or error retrieving it - nothing to do"
-    log_msg "NOTE: In confdb architecture, configuration comes from confdb, not snap set"
-fi
+# In confdb-first architecture, configuration comes from confdb views
+# The configure hook is intentionally minimal - configuration is managed
+# through confdb views and the registration-daemon handles registration
+log_msg "Configure hook - no action needed (confdb-first architecture)"
 
 log_msg "Configure hook completed successfully"
 log_msg "========================================"

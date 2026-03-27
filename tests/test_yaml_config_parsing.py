@@ -197,6 +197,8 @@ def test_yaml_config_parsing_from_snap():
         import traceback
 
         traceback.print_exc()
+        # Re-raise the exception so the test framework records a failure
+        raise
 
 
 if __name__ == "__main__":

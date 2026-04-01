@@ -31,7 +31,7 @@ plugs:
   configuration-read:
     interface: content
     target: $SNAP_COMMON/configuration
-  cos-registration-agent-control:
+  cos-registration-agent-control-configuration:
     interface: confdb
     account: VX84EGFo6txXHSNk4l55reEiaU5n7I7R
     view: cos-registration-agent/control-configuration
@@ -44,12 +44,12 @@ hooks:
     plugs: [network]
   connect-plug-rob-cos-common-write:
     plugs: [network]
-  connect-plug-cos-registration-agent-control:
-    plugs: [cos-registration-agent-control]
-  load-view-cos-registration-agent-control:
-    plugs: [cos-registration-agent-control]
-  save-view-cos-registration-agent-control:
-    plugs: [cos-registration-agent-control]
+  connect-plug-cos-registration-agent-control-configuration:
+    plugs: [cos-registration-agent-control-configuration]
+  load-view-cos-registration-agent-control-configuration:
+    plugs: [cos-registration-agent-control-configuration]
+  save-view-cos-registration-agent-control-configuration:
+    plugs: [cos-registration-agent-control-configuration]
   remove:
     plugs: [network, home, configuration-read]
 

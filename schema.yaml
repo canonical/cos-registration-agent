@@ -1,0 +1,30 @@
+account-id: VX84EGFo6txXHSNk4l55reEiaU5n7I7R
+name: cos-registration-agent
+summary: COS registration agent configuration schema with ephemeral YAML data
+# The revision for this confdb-schema
+# revision: 1
+views:
+  control-configuration:
+    summary: Complete read-write access to COS agent configuration (custodian)
+    rules:
+      - request: data
+        storage: data
+        access: read-write
+  configuration:
+    summary: Read access to COS agent configuration (observer)
+    rules:
+      - request: data
+        storage: data
+        access: read
+
+body: |-
+  {
+    "storage": {
+      "schema": {
+        "data": {
+          "type": "string",
+          "ephemeral": true
+        }
+      }
+    }
+  }

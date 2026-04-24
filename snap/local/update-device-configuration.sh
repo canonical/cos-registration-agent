@@ -1,31 +1,24 @@
-#!/usr/bin/bash -e
+#!/bin/sh -e
 
-CONFIGURATION_FILE_PATH="${SNAP_COMMON}/configuration/device.yaml"
+# Updated for confdb-first architecture
+# device.yaml is now synced from confdb to $SNAP_COMMON/device.yaml
+
+CONFIGURATION_FILE_PATH="${SNAP_COMMON}/device.yaml"
 IDENTITY_TOKEN_FILE_PATH="${SNAP_COMMON}/rob-cos-shared-data/identity/token.txt"
 
-CONFIG_PATH_PARAMETER="$(snapctl get configuration-path)"
-
-# Use fallback configuration mechanism if the configuration-path is set
-if [ -n "${CONFIG_PATH_PARAMETER}" ]; then
-    CONFIGURATION_FILE_PATH="/root/${CONFIG_PATH_PARAMETER}/device.yaml"
-fi
-
 if [ ! -f "${CONFIGURATION_FILE_PATH}" ]; then
-    echo "Configuration file '${CONFIGURATION_FILE_PATH}' does not exist."
-    logger -t ${SNAP_NAME} "Configuration file '${CONFIGURATION_FILE_PATH}' does not exist."
+    logger -t ${SNAP_NAME} "Configuration file does not exist"
     exit 1
 fi
 
-echo "Using configuration file: ${CONFIGURATION_FILE_PATH}."
-logger -t ${SNAP_NAME} "Using configuration file: ${CONFIGURATION_FILE_PATH}."
-
-# Retrieve the directory at which the configuration is stored
-CONFIGURATION_DIR_PATH="$(dirname "${CONFIGURATION_FILE_PATH}")"
+# Get configuration directory from rob-cos-demo-configuration via content interface
+# Dashboards and alerts are from the configuration snap, not device.yaml
+CONFIGURATION_DIR_PATH="${SNAP_COMMON}/configuration"
 
 # Set the registration command args based on configuration
 REGISTRATION_CMD_ARGS=""
 
-# Check if grafan_dashboards directory exists in configuration
+# Check if grafana_dashboards directory exists in configuration
 if [ -d "${CONFIGURATION_DIR_PATH}/grafana_dashboards" ]; then
     REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --grafana-dashboards ${CONFIGURATION_DIR_PATH}/grafana_dashboards"
 fi
@@ -50,5 +43,5 @@ if [ -f "${IDENTITY_TOKEN_FILE_PATH}" ]; then
     REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --token-file ${IDENTITY_TOKEN_FILE_PATH}"
 fi
 
-# Call the update command with the args
-${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} update -c ${CONFIGURATION_FILE_PATH}
+# Call the update command - action (update) comes first, then config file
+${SNAP}/bin/cos-registration-agent update --config "${CONFIGURATION_FILE_PATH}" --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS}

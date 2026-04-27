@@ -10,13 +10,6 @@ description: |
 grade: devel
 confinement: strict
 
-slots:
-  configuration:
-    interface: content
-    source:
-      read:
-        - $SNAP
-
 # Set the REQUESTS_CA_BUNDLE to make sure that
 # python requests library use host certificates.
 # Otherwise it will use the ones provided by `certifi`,
@@ -28,19 +21,19 @@ plugs:
   rob-cos-common-write:
     interface: content
     target: $SNAP_COMMON/rob-cos-shared-data
-  configuration-read:
-    interface: content
-    target: $SNAP_COMMON/configuration
+  confdb-configuration:
+    interface: confdb
+    account: canonical-robotics
+    view: cos-registration-agent/configuration
+    role: custodian
 
 hooks:
-  configure:
-    plugs: [network, home]
-  connect-plug-configuration-read:
+  observe-view-confdb-configuration:
     plugs: [network]
   connect-plug-rob-cos-common-write:
     plugs: [network]
   remove:
-    plugs: [network, home, configuration-read]
+    plugs: [network, confdb-configuration]
 
 parts:
   local-files:
@@ -51,23 +44,25 @@ parts:
   cos-registration-agent:
     plugin: python
     source: .
+    stage-packages:
+      - jq
 
 apps:
   update-device-configuration:
     command: usr/bin/update-device-configuration.sh
     daemon: oneshot
     install-mode: disable
-    plugs: [network, rob-cos-common-write, configuration-read, home]
+    plugs: [network, rob-cos-common-write, confdb-configuration]
   register-device:
     command: usr/bin/register-device.sh
     daemon: oneshot
     install-mode: disable
-    plugs: [network, rob-cos-common-write, configuration-read, home]
+    plugs: [network, rob-cos-common-write, confdb-configuration]
   delete-device:
     command: usr/bin/delete-device.sh
     daemon: oneshot
     install-mode: disable
-    plugs: [network, rob-cos-common-write, configuration-read, home]
+    plugs: [network, rob-cos-common-write, confdb-configuration]
   cos-registration-agent:
     command: bin/cos-registration-agent
-    plugs: [network, rob-cos-common-write, configuration-read, home]
+    plugs: [network, rob-cos-common-write, confdb-configuration]

@@ -1,54 +1,56 @@
-#!/usr/bin/bash -e
+#!/bin/bash -eu
 
-CONFIGURATION_FILE_PATH="${SNAP_COMMON}/configuration/device.yaml"
 IDENTITY_TOKEN_FILE_PATH="${SNAP_COMMON}/rob-cos-shared-data/identity/token.txt"
 
-CONFIG_PATH_PARAMETER="$(snapctl get configuration-path)"
+logger -t "${SNAP_NAME}" "Reading device configuration from confdb view"
 
-# Use fallback configuration mechanism if the configuration-path is set
-if [ -n "${CONFIG_PATH_PARAMETER}" ]; then
-    CONFIGURATION_FILE_PATH="/root/${CONFIG_PATH_PARAMETER}/device.yaml"
+# Write device.yaml content to a temp file
+DEVICE_CONFIG="$(snapctl get --view :confdb-configuration device)"
+. "${SNAP}/usr/bin/write-tmp-file.sh" "${DEVICE_CONFIG}" DEVICE_CONFIG_FILE
+
+echo "Using confdb-provided device configuration file: ${DEVICE_CONFIG_FILE}"
+logger -t "${SNAP_NAME}" "Using confdb-provided device configuration file: ${DEVICE_CONFIG_FILE}"
+
+# Build optional arguments for asset directories
+CMD_ARGS=()
+
+# Grafana dashboards
+GRAFANA_DASHBOARDS="$(snapctl get --view :confdb-configuration grafana-dashboards || true)"
+if [[ -n "${GRAFANA_DASHBOARDS}" ]] && [[ "${GRAFANA_DASHBOARDS}" != "null" ]]; then
+  . "${SNAP}/usr/bin/write-tmp-dir.sh" "${GRAFANA_DASHBOARDS}" json GRAFANA_DASHBOARDS_DIR
+  CMD_ARGS+=(--grafana-dashboards "${GRAFANA_DASHBOARDS_DIR}")
 fi
 
-if [ ! -f "${CONFIGURATION_FILE_PATH}" ]; then
-    echo "Configuration file '${CONFIGURATION_FILE_PATH}' does not exist."
-    logger -t ${SNAP_NAME} "Configuration file '${CONFIGURATION_FILE_PATH}' does not exist."
-    exit 1
+# Foxglove layouts
+FOXGLOVE_LAYOUTS="$(snapctl get --view :confdb-configuration foxglove-layouts || true)"
+if [[ -n "${FOXGLOVE_LAYOUTS}" ]] && [[ "${FOXGLOVE_LAYOUTS}" != "null" ]]; then
+  . "${SNAP}/usr/bin/write-tmp-dir.sh" "${FOXGLOVE_LAYOUTS}" json FOXGLOVE_LAYOUTS_DIR
+  CMD_ARGS+=(--foxglove-studio-dashboards "${FOXGLOVE_LAYOUTS_DIR}")
 fi
 
-echo "Using configuration file: ${CONFIGURATION_FILE_PATH}."
-logger -t ${SNAP_NAME} "Using configuration file: ${CONFIGURATION_FILE_PATH}."
-
-# Retrieve the directory at which the configuration is stored
-CONFIGURATION_DIR_PATH="$(dirname "${CONFIGURATION_FILE_PATH}")"
-
-# Set the registration command args based on configuration
-REGISTRATION_CMD_ARGS=""
-
-# Check if grafan_dashboards directory exists in configuration
-if [ -d "${CONFIGURATION_DIR_PATH}/grafana_dashboards" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --grafana-dashboards ${CONFIGURATION_DIR_PATH}/grafana_dashboards"
+# Loki alert rules
+LOKI_ALERT_RULES="$(snapctl get --view :confdb-configuration loki-alert-rules || true)"
+if [[ -n "${LOKI_ALERT_RULES}" ]] && [[ "${LOKI_ALERT_RULES}" != "null" ]]; then
+  . "${SNAP}/usr/bin/write-tmp-dir.sh" "${LOKI_ALERT_RULES}" rules LOKI_ALERT_RULES_DIR
+  CMD_ARGS+=(--loki-alert-rule-files "${LOKI_ALERT_RULES_DIR}")
 fi
 
-# Check if foxglove_layouts directory exists in configuration
-if [ -d "${CONFIGURATION_DIR_PATH}/foxglove_layouts" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --foxglove-studio-dashboards ${CONFIGURATION_DIR_PATH}/foxglove_layouts"
+# Prometheus alert rules
+PROMETHEUS_ALERT_RULES="$(snapctl get --view :confdb-configuration prometheus-alert-rules || true)"
+if [[ -n "${PROMETHEUS_ALERT_RULES}" ]] && [[ "${PROMETHEUS_ALERT_RULES}" != "null" ]]; then
+  . "${SNAP}/usr/bin/write-tmp-dir.sh" "${PROMETHEUS_ALERT_RULES}" rules PROMETHEUS_ALERT_RULES_DIR
+  CMD_ARGS+=(--prometheus-alert-rule-files "${PROMETHEUS_ALERT_RULES_DIR}")
 fi
 
-# Check if loki_alert_rules directory exists in configuration
-if [ -d "${CONFIGURATION_DIR_PATH}/loki_alert_rules" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --loki-alert-rule-files ${CONFIGURATION_DIR_PATH}/loki_alert_rules"
+# Identity token
+GLOBAL_ARGS=()
+if [[ -f "${IDENTITY_TOKEN_FILE_PATH}" ]]; then
+  GLOBAL_ARGS+=(--token-file "${IDENTITY_TOKEN_FILE_PATH}")
 fi
 
-# Check if prometheus_alert_rules directory exists in configuration
-if [ -d "${CONFIGURATION_DIR_PATH}/prometheus_alert_rules" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --prometheus-alert-rule-files ${CONFIGURATION_DIR_PATH}/prometheus_alert_rules"
-fi
-
-# Check if identity token exists in configuration
-if [ -f "${IDENTITY_TOKEN_FILE_PATH}" ]; then
-    REGISTRATION_CMD_ARGS="${REGISTRATION_CMD_ARGS} --token-file ${IDENTITY_TOKEN_FILE_PATH}"
-fi
-
-# Call the update command with the args
-${SNAP}/bin/cos-registration-agent --shared-data-path ${SNAP_COMMON}/rob-cos-shared-data ${REGISTRATION_CMD_ARGS} update -c ${CONFIGURATION_FILE_PATH}
+"${SNAP}/bin/cos-registration-agent" \
+  --shared-data-path "${SNAP_COMMON}/rob-cos-shared-data" \
+  "${GLOBAL_ARGS[@]}" \
+  update \
+  -c "${DEVICE_CONFIG_FILE}" \
+  "${CMD_ARGS[@]}"

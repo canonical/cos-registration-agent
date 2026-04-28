@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: . write-tmp-dir.sh "$JSON_MAP" "file_extension" OUTPUT_VAR
+# Usage: . write-confdb-map-to-tmp-dir.sh "$JSON_MAP" "file_extension" OUTPUT_VAR
 #
 # Creates a temporary directory and writes each key/value pair from JSON_MAP
 # as a file named "<key>.<file_extension>" inside it.

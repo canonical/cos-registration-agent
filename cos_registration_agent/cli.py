@@ -142,11 +142,16 @@ def _parse_args() -> ArgumentParser.parse_args:
         type=str,
     )
     delete_parser.add_argument("--url", help="COS base IP/URL", type=str)
+    delete_parser.add_argument(
+        "-c",
+        "--config",
+        is_config_file=True,
+        nargs="?",
+        help="Config file path",
+    )
 
     # Arguments shared between all the actions
-    parser.add_argument(
-        "--config", is_config_file=True, help="Config file path."
-    )
+    parser.add_argument("--config", is_config_file=True, help="Config file path.")
     parser.add_argument("--url", help="COS base IP/URL", type=str)
 
     parser.add_argument(
@@ -197,9 +202,7 @@ def _parse_args() -> ArgumentParser.parse_args:
     return parser.parse_args()
 
 
-def handle_tls_certificate_polling(
-    cos_registration_agent, device_ip_address
-) -> None:
+def handle_tls_certificate_polling(cos_registration_agent, device_ip_address) -> None:
     """
     Handle the TLS certificate polling process.
 
@@ -208,9 +211,7 @@ def handle_tls_certificate_polling(
         device_ip_address: The IP address of the device.
     """
     logger = logging.getLogger(__name__)
-    if not cos_registration_agent.request_device_tls_certificate(
-        device_ip_address
-    ):
+    if not cos_registration_agent.request_device_tls_certificate(device_ip_address):
         logger.error("Failed to submit CSR.")
         cos_registration_agent.delete_device()
         return
@@ -333,13 +334,9 @@ def main():
                 # TODO Retrieve the key from the shared folder
                 # data_to_update["public_ssh_key"] = public_ssh_key
             if args.device_grafana_dashboards:
-                data_to_update["grafana_dashboards"] = (
-                    args.device_grafana_dashboards
-                )
+                data_to_update["grafana_dashboards"] = args.device_grafana_dashboards
             if args.device_foxglove_dashboards:
-                data_to_update["foxglove_dashboards"] = (
-                    args.device_foxglove_dashboards
-                )
+                data_to_update["foxglove_dashboards"] = args.device_foxglove_dashboards
             if args.device_loki_alert_rule_files:
                 data_to_update["loki_alert_rule_files"] = (
                     args.device_loki_alert_rule_files

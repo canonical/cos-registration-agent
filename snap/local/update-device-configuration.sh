@@ -17,28 +17,28 @@ CMD_ARGS=()
 # Grafana dashboards
 GRAFANA_DASHBOARDS="$(snapctl get --view :confdb-configuration grafana.dashboards || true)"
 if [[ -n "${GRAFANA_DASHBOARDS}" ]] && [[ "${GRAFANA_DASHBOARDS}" != "null" ]]; then
-  . "${SNAP}/usr/bin/write-confdb-map-to-tmp-dir.sh" "${GRAFANA_DASHBOARDS}" json GRAFANA_DASHBOARDS_DIR
+  . "${SNAP}/usr/bin/write-confdb-map-to-tmp-dir.sh" "${GRAFANA_DASHBOARDS}" GRAFANA_DASHBOARDS_DIR
   CMD_ARGS+=(--grafana-dashboards "${GRAFANA_DASHBOARDS_DIR}")
 fi
 
 # Foxglove layouts
 FOXGLOVE_LAYOUTS="$(snapctl get --view :confdb-configuration foxglove.layouts || true)"
 if [[ -n "${FOXGLOVE_LAYOUTS}" ]] && [[ "${FOXGLOVE_LAYOUTS}" != "null" ]]; then
-  . "${SNAP}/usr/bin/write-confdb-map-to-tmp-dir.sh" "${FOXGLOVE_LAYOUTS}" json FOXGLOVE_LAYOUTS_DIR
+  . "${SNAP}/usr/bin/write-confdb-map-to-tmp-dir.sh" "${FOXGLOVE_LAYOUTS}" FOXGLOVE_LAYOUTS_DIR
   CMD_ARGS+=(--foxglove-studio-dashboards "${FOXGLOVE_LAYOUTS_DIR}")
 fi
 
 # Loki alert rules
 LOKI_ALERT_RULES="$(snapctl get --view :confdb-configuration loki.alerts || true)"
 if [[ -n "${LOKI_ALERT_RULES}" ]] && [[ "${LOKI_ALERT_RULES}" != "null" ]]; then
-  . "${SNAP}/usr/bin/write-confdb-map-to-tmp-dir.sh" "${LOKI_ALERT_RULES}" rules LOKI_ALERT_RULES_DIR
+  . "${SNAP}/usr/bin/write-confdb-map-to-tmp-dir.sh" "${LOKI_ALERT_RULES}" LOKI_ALERT_RULES_DIR
   CMD_ARGS+=(--loki-alert-rule-files "${LOKI_ALERT_RULES_DIR}")
 fi
 
 # Prometheus alert rules
 PROMETHEUS_ALERT_RULES="$(snapctl get --view :confdb-configuration prometheus.alerts || true)"
 if [[ -n "${PROMETHEUS_ALERT_RULES}" ]] && [[ "${PROMETHEUS_ALERT_RULES}" != "null" ]]; then
-  . "${SNAP}/usr/bin/write-confdb-map-to-tmp-dir.sh" "${PROMETHEUS_ALERT_RULES}" rules PROMETHEUS_ALERT_RULES_DIR
+  . "${SNAP}/usr/bin/write-confdb-map-to-tmp-dir.sh" "${PROMETHEUS_ALERT_RULES}" PROMETHEUS_ALERT_RULES_DIR
   CMD_ARGS+=(--prometheus-alert-rule-files "${PROMETHEUS_ALERT_RULES_DIR}")
 fi
 

@@ -1,0 +1,6 @@
+#!/bin/sh -eu
+
+if ! "${SNAP}/usr/bin/update-device-configuration.sh"; then
+  logger -t "${SNAP_NAME}" "Device update failed on confdb connection, falling back to registration"
+  "${SNAP}/usr/bin/register-device.sh"
+fi

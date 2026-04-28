@@ -30,6 +30,8 @@ plugs:
 hooks:
   observe-view-confdb-configuration:
     plugs: [network]
+  connect-plug-confdb-configuration:
+    plugs: [network]
   connect-plug-rob-cos-common-write:
     plugs: [network]
   remove:

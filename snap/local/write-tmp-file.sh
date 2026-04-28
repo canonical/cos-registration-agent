@@ -9,11 +9,21 @@
 _write_tmp_file_content="${1:?missing content}"
 _write_tmp_file_output_var="${2:?missing output variable name}"
 
-# there can be only one "trap"
-# So we append to _write_tmp_files
+_append_exit_trap() {
+  local _new_exit_cmd="${1:?missing exit command}"
+  local _current_exit_trap
+
+  _current_exit_trap="$(trap -p EXIT | sed -E "s/^trap -- '(.*)' EXIT$/\1/")"
+  if [[ -n "${_current_exit_trap}" ]]; then
+    trap "${_current_exit_trap}; ${_new_exit_cmd}" EXIT
+  else
+    trap "${_new_exit_cmd}" EXIT
+  fi
+}
+
 if [[ -z "${_write_tmp_file_init_done:-}" ]]; then
   _write_tmp_files=()
-  trap 'rm -f "${_write_tmp_files[@]}"' EXIT
+  _append_exit_trap 'rm -f "${_write_tmp_files[@]}" 2>/dev/null || true'
   _write_tmp_file_init_done=1
 fi
 

@@ -5,7 +5,11 @@ IDENTITY_TOKEN_FILE_PATH="${SNAP_COMMON}/rob-cos-shared-data/identity/token.txt"
 logger -t "${SNAP_NAME}" "Reading device configuration from confdb view"
 
 # Write device.yaml content to a temp file
-DEVICE_CONFIG="$(snapctl get --view :confdb-configuration device)"
+DEVICE_CONFIG="$(snapctl get --view :confdb-configuration device || true)"
+if [[ -z "${DEVICE_CONFIG}" ]] || [[ "${DEVICE_CONFIG}" == "null" ]]; then
+  logger -t "${SNAP_NAME}" "Device configuration is empty in confdb view, skipping registration"
+  exit 0
+fi
 . "${SNAP}/usr/bin/write-tmp-file.sh" "${DEVICE_CONFIG}" DEVICE_CONFIG_FILE
 
 logger -t "${SNAP_NAME}" "Using confdb-provided device configuration file: ${DEVICE_CONFIG_FILE}"

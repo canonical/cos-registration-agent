@@ -16,177 +16,115 @@ from cos_registration_agent.write_data import write_data
 
 def _parse_args() -> ArgumentParser.parse_args:
 
-    parser = configargparse.get_argument_parser()
-
-    action_subparsers = parser.add_subparsers(
-        dest="action",
-        help="Action to perform",
-        parser_class=configargparse.ArgParser,
+    parser = configargparse.get_argument_parser(
+        config_file_parser_class=configargparse.YAMLConfigFileParser,
+        description="COS Registration Agent - Register and manage devices with COS server",
     )
 
-    # Arguments to setup and register the cos device
-    setup_parser = action_subparsers.add_parser(
-        "setup", help="Register device and add custom dashboards"
-    )
-    setup_parser.add_argument(
-        "--uid",
-        help="Robot unique ID, default set to machine ID.",
-        type=str,
-    )
-    setup_parser.add_argument("--url", help="COS base IP/URL", type=str)
-
-    setup_parser.add_argument(
-        "--device-grafana-dashboards",
-        help="List of grafana dashboards used by this device",
-        nargs="+",
-        default=[],
-    )
-    setup_parser.add_argument(
-        "--device-foxglove-dashboards",
-        help="List of foxglove dashboards used by this device",
-        nargs="+",
-        default=[],
-    )
-    setup_parser.add_argument(
-        "--device-loki-alert-rule-files",
-        help="list of Loki alert rule files to render for this device",
-        nargs="+",
-        default=[],
-    )
-    setup_parser.add_argument(
-        "--device-prometheus-alert-rule-files",
-        help="list of Prometheus alert rule files to render for this device",
-        nargs="+",
-        default=[],
-    )
-
-    setup_parser.add_argument(
-        "--generate-device-tls-certificate",
-        help="generate a TLS certificate and key for this device",
-        action="store_true",
-    )
-
-    setup_parser.add_argument(
-        "-c",
-        "--config",
-        is_config_file=True,
-        nargs="?",
-        help="Config file path",
-    )
-
-    update_parser = action_subparsers.add_parser(
-        "update", help="Update custom device data and dashboards"
-    )
-
-    # Arguments to update the cos device and its data
-    update_parser.add_argument(
-        "--uid",
-        help="Robot unique ID, default set to machine ID.",
-        type=str,
-    )
-    update_parser.add_argument("--url", help="COS base IP/URL", type=str)
-
-    update_parser.add_argument(
-        "--update-ssh-keys",
-        help="Update device public ssh keys",
-        action="store_true",
-    )
-
-    update_parser.add_argument(
-        "--device-grafana-dashboards",
-        help="Update device grafana dashboards list",
-        nargs="+",
-    )
-    update_parser.add_argument(
-        "--device-foxglove-dashboards",
-        help="Update device foxglove dashboards list",
-        nargs="+",
-    )
-    update_parser.add_argument(
-        "--device-loki-alert-rule-files",
-        help="Update device Loki alert rule files list",
-        nargs="+",
-        default=[],
-    )
-    update_parser.add_argument(
-        "--device-prometheus-alert-rule-files",
-        help="Update device Prometheus alert rule files list",
-        nargs="+",
-        default=[],
-    )
-    update_parser.add_argument(
-        "--generate-device-tls-certificate",
-        help="generate a TLS certificate and key for this device",
-        action="store_true",
-    )
-    update_parser.add_argument(
-        "-c",
-        "--config",
-        is_config_file=True,
-        nargs="?",
-        help="Config file path",
-    )
-
-    writeuid_parser = action_subparsers.add_parser(
-        "write-uid", help="Write device unique ID to a file"
-    )
-
-    delete_parser = action_subparsers.add_parser(
-        "delete", help="Delete device from server"
-    )
-
-    # Arguments to delete the cos device and its data
-    delete_parser.add_argument(
-        "--uid",
-        help="Robot unique ID, default set to machine ID.",
-        type=str,
-    )
-    delete_parser.add_argument("--url", help="COS base IP/URL", type=str)
-
-    # Arguments shared between all the actions
+    # Action as a positional argument
     parser.add_argument(
-        "--config", is_config_file=True, help="Config file path."
+        "action",
+        choices=["setup", "update", "write-uid", "delete"],
+        help="Action to perform: setup (register device), update (update device data), "
+        "write-uid (write device ID to file), delete (remove device from server)",
     )
-    parser.add_argument("--url", help="COS base IP/URL", type=str)
 
+    # Config file
+    parser.add_argument(
+        "-c",
+        "--config",
+        is_config_file=True,
+        help="Config file path (YAML format)",
+    )
+
+    # Core device identification
+    parser.add_argument(
+        "--url",
+        help="COS base IP/URL",
+        type=str,
+    )
+    parser.add_argument(
+        "--uid",
+        help="Robot unique ID, default set to machine ID if not provided",
+        type=str,
+    )
+
+    # Paths
     parser.add_argument(
         "--shared-data-path",
-        help="The path to which the relevant common devices app files \
-            such as robot-unique-id are stored.",
+        help="Path to which relevant common devices app files (like robot-unique-id) are stored",
         type=str,
         default=os.getcwd(),
     )
 
+    # Dashboard and alert file lists from config (YAML arrays)
+    parser.add_argument(
+        "--device-grafana-dashboards",
+        help="List of grafana dashboard names used by this device (from config file)",
+        nargs="*",
+        default=[],
+    )
+    parser.add_argument(
+        "--device-foxglove-dashboards",
+        help="List of foxglove dashboard names used by this device (from config file)",
+        nargs="*",
+        default=[],
+    )
+    parser.add_argument(
+        "--device-loki-alert-rule-files",
+        help="List of Loki alert rule file names to render for this device (from config file)",
+        nargs="*",
+        default=[],
+    )
+    parser.add_argument(
+        "--device-prometheus-alert-rule-files",
+        help="List of Prometheus alert rule file names to render for this device (from config file)",
+        nargs="*",
+        default=[],
+    )
+
+    # Directory paths for dashboards/alerts (command-line only)
     parser.add_argument(
         "--grafana-dashboards",
-        help="Path to the grafana dashboard",
+        help="Path to the grafana dashboards directory",
         type=Path,
     )
-
     parser.add_argument(
         "--foxglove-studio-dashboards",
-        help="Path to the foxglove dashboard",
+        help="Path to the foxglove dashboards directory",
         type=Path,
     )
-
     parser.add_argument(
         "--loki-alert-rule-files",
-        help="Path to the Loki alert rule files",
+        help="Path to the Loki alert rule files directory",
         type=Path,
     )
-
     parser.add_argument(
         "--prometheus-alert-rule-files",
-        help="Path to the Prometheus alert rule files",
+        help="Path to the Prometheus alert rule files directory",
         type=Path,
     )
 
+    # Optional features
+    parser.add_argument(
+        "--update-ssh-keys",
+        help="Update device public ssh keys (for update action)",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--generate-device-tls-certificate",
+        help="Generate a TLS certificate and key for this device",
+        action="store_true",
+    )
+
+    # Logging
     parser.add_argument(
         "--log-level",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         help="Set the logging level",
     )
 
+    # Authentication
     parser.add_argument(
         "--token-file",
         help="Authorization bearer token file path",

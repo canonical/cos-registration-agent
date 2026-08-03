@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, mock_open
 from pathlib import Path
 import responses
 import json
@@ -174,12 +174,13 @@ class TestCosRegistrationAgent(unittest.TestCase):
 
         agent.patch_device({"address": device_ip})
 
+    @patch("pathlib.Path.is_file", return_value=True)
     @patch(
         "builtins.open",
-        new_callable=MagicMock,
+        new_callable=mock_open,
+        read_data='{"dashboard": "content"}',
     )
-    @patch("pathlib.Path.is_file", return_value=True)
-    def test_add_dashboards(self, mock_open, mock_is_file):
+    def test_add_dashboards(self, mock_file, mock_is_file):
 
         grafana_dashboard_name = "my-dashboard"
         grafana_dashboard = """
@@ -225,12 +226,13 @@ class TestCosRegistrationAgent(unittest.TestCase):
 
                 agent.patch_dashboards("path_to_my_dashboard", "grafana")
 
+    @patch("pathlib.Path.is_file", return_value=True)
     @patch(
         "builtins.open",
-        new_callable=MagicMock,
+        new_callable=mock_open,
+        read_data='{"dashboard": "content"}',
     )
-    @patch("pathlib.Path.is_file", return_value=True)
-    def test_patch_dashboards(self, mock_open, mock_is_file):
+    def test_patch_dashboards(self, mock_file, mock_is_file):
 
         grafana_dashboard_name = "my-dashboard"
         grafana_dashboard = """
@@ -318,12 +320,13 @@ class TestCosRegistrationAgent(unittest.TestCase):
                 json_load_mock.return_value = grafana_dashboard
                 agent.patch_dashboards("path_to_my_dashboard", "grafana")
 
+    @patch("pathlib.Path.is_file", return_value=True)
     @patch(
         "builtins.open",
-        new_callable=MagicMock,
+        new_callable=mock_open,
+        read_data="groups:\n  - name: my_rule\n",
     )
-    @patch("pathlib.Path.is_file", return_value=True)
-    def test_add_rule_file(self, mock_open, mock_is_file):
+    def test_add_rule_file(self, mock_file, mock_is_file):
 
         loki_rule_file_name = "my-rule"
         loki_rule_file = """
@@ -373,12 +376,13 @@ class TestCosRegistrationAgent(unittest.TestCase):
 
                 agent.patch_rule_files("path_to_my_rule_file", "loki")
 
+    @patch("pathlib.Path.is_file", return_value=True)
     @patch(
         "builtins.open",
-        new_callable=MagicMock,
+        new_callable=mock_open,
+        read_data="groups:\n  - name: my_rule\n",
     )
-    @patch("pathlib.Path.is_file", return_value=True)
-    def test_patch_rule_file(self, mock_open, mock_is_file):
+    def test_patch_rule_file(self, mock_file, mock_is_file):
 
         loki_rule_file_name = "my-rule"
         loki_rule_file = """

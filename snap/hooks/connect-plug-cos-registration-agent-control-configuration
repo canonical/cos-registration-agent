@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+# Connect hook for cos-registration-agent-control-configuration
+# This hook always succeeds when the confdb interface is connected
+# It starts the registration-daemon service that will keep trying to register
+
+logger -t "${SNAP_NAME}.connect-plug" "Connected cos-registration-agent-control-configuration interface"
+
+# Start the registration daemon to handle async registration
+if snapctl start --enable ${SNAP_NAME}.registration-daemon 2>&1; then
+    logger -t "${SNAP_NAME}.connect-plug" "Registration daemon started"
+else
+    # Log error but don't fail the hook
+    logger -t "${SNAP_NAME}.connect-plug" "Failed to start registration daemon"
+fi
+
+exit 0

@@ -1,6 +1,16 @@
 #!/bin/sh -e
 
-if ! $SNAP/usr/bin/register-device.sh; then
-  logger -t "${SNAP_NAME}" "device registration failed in connect-plug-configuration-read"
-  logger -t "${SNAP_NAME}" "You can try again later by running: sudo snap run ${SNAP_NAME}.register-device"
+# Connect hook for configuration-read content interface
+# This hook always succeeds when the content interface is connected
+# Registration is handled asynchronously by the registration-daemon service
+
+logger -t "${SNAP_NAME}.connect-plug-configuration-read" "Connected configuration-read interface"
+
+# Trigger registration-daemon if not already running
+# This allows registration to happen when configuration becomes available
+if ! snapctl services ${SNAP_NAME}.registration-daemon | grep -q "enabled.*active"; then
+    snapctl start --enable ${SNAP_NAME}.registration-daemon 2>&1 || \
+        logger -t "${SNAP_NAME}.connect-plug-configuration-read" "Failed to start registration daemon"
 fi
+
+exit 0
